@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef LIST_H
+#define LIST_H
+
 /**
 * @brief 链表结点
 */
@@ -24,6 +27,8 @@ typedef struct Node {
 typedef struct List {
 	Node *head, *tail; // 头结点与尾结点
 } List;
+
+#endif // LIST_H
 
 /**
  * @brief 初始化链表，最初链表只有一个结点，其即为头节点又为尾结点。
