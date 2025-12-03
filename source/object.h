@@ -24,11 +24,17 @@ typedef enum ObjectType {
 	BULLET
 } ObjectType;
 
+/**
+* @brief 游戏对象，表示游戏中的各种实体。无需单独储存每个对象的宽高，而通过对象的类型推导，使用预定义的常量。
+*/
 typedef struct Object {
 	int x, y; // 游戏对象左上角位置坐标，单位：像素
 	ObjectType type;
 } Object;
 
+/**
+* @brief 判断游戏对象是否碰撞。
+*/
 bool object_collide(const Object *obj1, const Object *obj2);
 
 #endif /* OBJECT_H */
