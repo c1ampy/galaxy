@@ -45,6 +45,6 @@ void list_random_erase(List *list, Node *node);
 /**
  * @brief 释放链表。
  */
-void list_destroy(List *list);
+void list_free(List *list);
 
 #endif /* LIST_H */
