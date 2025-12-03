@@ -48,6 +48,7 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			height1 = BULLET_HEIGHT;
 			break;
 		default:
+			fprintf(stderr, "对象类型错误。\n");
 			return false;
 	}
 
@@ -65,6 +66,7 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			height2 = BULLET_HEIGHT;
 			break;
 		default:
+			fprintf(stderr, "对象类型错误。\n");
 			return false;
 	}
 
