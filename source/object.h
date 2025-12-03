@@ -29,7 +29,6 @@ typedef struct Object {
 	ObjectType type;
 } Object;
 
-
 bool object_collide(const Object *obj1, const Object *obj2);
 
 #endif /* OBJECT_H */
