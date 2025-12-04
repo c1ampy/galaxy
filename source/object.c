@@ -1,5 +1,5 @@
 /** 
- * @file object.h
+ * @file object.c
  * @brief 这份源文件实现了有关 Object 结构体的一系列重要函数。以下单位均为像素。
  * @author 陆营
  * @date 2025-12-03
