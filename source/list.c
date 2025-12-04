@@ -52,7 +52,7 @@ List *list_init() {
 /**
  * @brief 从链表尾部插入元素。
  */
-void list_tail_insert(List *list, void *data) {
+void list_append(List *list, void *data) {
 	if (!list) {
 		fprintf(stderr, "无效的链表。\n");
 		return;
@@ -99,7 +99,7 @@ void list_random_erase(List *list, Node *node) {
 /**
  * @brief 释放链表。
  */
-void list_destroy(List *list) {
+void list_free(List *list) {
 	if (!list)
 		return;
 

@@ -35,7 +35,7 @@ List *list_init();
 /**
  * @brief O(1) 从链表尾部插入元素。
  */
-void list_tail_insert(List *list, void *data);
+void list_append(List *list, void *data);
 
 /**
  * @brief O(1) 随机删除链表元素，需要保证传入的结点在链表中，且不为头结点。
@@ -45,6 +45,6 @@ void list_random_erase(List *list, Node *node);
 /**
  * @brief 释放链表。
  */
-void list_destroy(List *list);
+void list_free(List *list);
 
 #endif /* LIST_H */
