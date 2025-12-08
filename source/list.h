@@ -12,16 +12,16 @@
 #define LIST_H
 
 /**
-* @brief 链表结点
-*/
+ * @brief 链表结点
+ */
 typedef struct Node {
 	void *data; // 泛型数据
 	struct Node *next, *prev; // 双向链表
 } Node;
 
 /**
-* @brief 链表本身，头结点总不储存数据而尾结点储存数据。
-*/
+ * @brief 链表本身，头结点总不储存数据而尾结点储存数据。
+ */
 typedef struct List {
 	Node *head, *tail;
 } List;
