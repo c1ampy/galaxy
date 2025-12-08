@@ -15,7 +15,7 @@
 
 typedef enum ObjectType {
 	PLAYER,
-	ENIMY,
+	ENEMY,
 	BULLET
 } ObjectType;
 
@@ -45,9 +45,9 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			width1 = PLAYER_WIDTH;
 			height1 = PLAYER_HEIGHT;
 			break;
-		case ENIMY:
-			width1 = ENIMY_WIDTH;
-			height1 = ENIMY_HEIGHT;
+		case ENEMY:
+			width1 = ENEMY_WIDTH;
+			height1 = ENEMY_HEIGHT;
 			break;
 		case BULLET:
 			width1 = BULLET_WIDTH;
@@ -63,9 +63,9 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			width2 = PLAYER_WIDTH;
 			height2 = PLAYER_HEIGHT;
 			break;
-		case ENIMY:
-			width2 = ENIMY_WIDTH;
-			height2 = ENIMY_HEIGHT;
+		case ENEMY:
+			width2 = ENEMY_WIDTH;
+			height2 = ENEMY_HEIGHT;
 			break;
 		case BULLET:
 			width2 = BULLET_WIDTH;

@@ -13,14 +13,14 @@
 
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 50
-#define ENIMY_WIDTH 40
-#define ENIMY_HEIGHT 40
+#define ENEMY_WIDTH 40
+#define ENEMY_HEIGHT 40
 #define BULLET_WIDTH 10
 #define BULLET_HEIGHT 20
 
 typedef enum ObjectType {
 	PLAYER,
-	ENIMY,
+	ENEMY,
 	BULLET
 } ObjectType;
 
