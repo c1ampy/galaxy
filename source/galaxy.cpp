@@ -120,7 +120,7 @@ void game_update() {
 		enemy_node = next_enemy_node;
 	}
 
-	// 所有敌机向上移动，删除超出屏幕的子弹。
+	// 所有子弹向上移动，删除超出屏幕的子弹。
 	for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
 		Node *next_bullet_node = bullet_node->next; // 同上
 		Object *bullet = (Object *)bullet_node->data;
