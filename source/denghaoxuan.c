@@ -9,10 +9,9 @@
 #include "list.h"
 #include "object.h"
 
-#define SCREEN_WIDTH 400
+#define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 800
-#define PLANE_SIZE 50
-#define ENEMY_SPEED 20
+#define FPS 60
 #define ENEMY_NUM 10
 #define BULLET_NUM 50
 #define BULLET_TIME 0.5
@@ -67,7 +66,7 @@ bool object_collide(const Object *obj1, const Object *obj2)
         width1 = PLAYER_WIDTH;
         height1 = PLAYER_HEIGHT;
         break;
-    case ENIMY:
+    case ENEMY:
         width1 = ENIMY_WIDTH;
         height1 = ENIMY_HEIGHT;
         break;
@@ -86,7 +85,7 @@ bool object_collide(const Object *obj1, const Object *obj2)
         width2 = PLAYER_WIDTH;
         height2 = PLAYER_HEIGHT;
         break;
-    case ENIMY:
+    case ENEMY:
         width2 = ENIMY_WIDTH;
         height2 = ENIMY_HEIGHT;
         break;
@@ -106,7 +105,7 @@ bool object_collide(const Object *obj1, const Object *obj2)
     y2 = obj2->y + height2;
     r1 = (width1 / 2 > height1 / 2) ? width1 / 2 : height1 / 2;
     r1 = (width2 / 2 > height2 / 2) ? width2 / 2 : height2 / 2;
-    double d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));//半径判定
+    double d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)); // 半径判定
     if (d < r1 + r2)
     {
         return true; // 撞上了返回true
@@ -125,7 +124,40 @@ bool object_collide(const Object *obj1, const Object *obj2)
     return false;*/
 }
 
-void initEnemyplane() // 生成敌机
+void playerMove()
+{
+    
+    if (GetAsyncKeyState('W') & 0x8000 || GetAsyncKeyState(VK_UP) & 0x8000)
+    {
+        if(player->y > 0)
+        {
+            player->y -= player_speed;
+        }
+    }
+    if (GetAsyncKeyState('S') & 0x8000 || GetAsyncKeyState(VK_DOWN) & 0x8000)
+    {
+        if(player->y < SCREEN_HEIGHT - PLAYER_HEIGHT)
+        {
+            player->y += player_speed;
+        }
+    }
+    if (GetAsyncKeyState('A') & 0x8000 || GetAsyncKeyState(VK_LEFT) & 0x8000)
+    {
+        if(player->x > 0)
+        {
+            player->x -= player_speed;
+        }
+    }
+    if (GetAsyncKeyState('D') & 0x8000 || GetAsyncKeyState(VK_RIGHT) & 0x8000)
+    {
+        if(player->x < SCREEN_WIDTH - PLAYER_WIDTH)
+        {
+            player->x += player_speed;
+        }
+    }
+}
+
+void initEnemyPlane() // 生成敌机
 {
 
     int endTime = time(NULL);                        // 获取当前时间
@@ -140,8 +172,8 @@ void initEnemyplane() // 生成敌机
                 fprintf(stderr, "内存分配失败。\n");
                 exit(EXIT_FAILURE);
             }
-            int x = (rand() % (SCREEN_WIDTH - 2 * PLANE_SIZE) + PLANE_SIZE); // 确保出现在画幅内
-            int y = -PLANE_SIZE;                                             // 确保纵向上飞机从画幅外掉落
+            int x = rand() % (SCREEN_WIDTH - ENEMY_WIDTH); // 确保出现在画幅内
+            int y = -ENEMY_HEIGHT;                                             // 确保纵向上飞机从画幅外掉落
             new_enemy->x = x;
             new_enemy->y = y;
             new_enemy->type = ENEMY;
@@ -165,8 +197,8 @@ void initBullet() // 生成子弹
             fprintf(stderr, "内存分配失败。\n");
             exit(EXIT_FAILURE);
         }
-        int x = player->x + PLAYER_WIDTH / 2;
-        int y = player->y; // 确保出现在飞机的上方正中
+        int x = player->x + PLAYER_WIDTH / 2 - BULLET_WIDTH/2;
+        int y = player->y - BULLET_HEIGHT; // 确保出现在玩家飞机的上方正中
         new_bullet->x = x;
         new_bullet->y = y;
         new_bullet->type = BULLET;
@@ -182,7 +214,7 @@ void enemyPlaneMove() // 敌机移动，当敌机到达屏幕最底下时销毁
         Node *next_enemy_node = enemy_node->next;
         Object *enemy = (Object *)enemy_node->data;
         enemy->y += enemy_speed;
-        if (enemy->y + ENEMY_HEIGHT> SCREEN_HEIGHT) // 判断是否到达屏幕底部
+        if (enemy->y + ENEMY_HEIGHT > SCREEN_HEIGHT) // 判断是否到达屏幕底部
         {
             list_random_erase(enemy_list, enemy_node); // 删除该敌机
             //--hp 或者 游戏结束
@@ -206,7 +238,7 @@ void bulletMove() // 子弹移动，当子弹到达屏幕上部时销毁
     }
 }
 
-void enemycheck() // 对于所有敌机，判断其与子弹、玩家是否碰撞。
+void enemyCheck() // 对于所有敌机，判断其与子弹、玩家是否碰撞。
 {
     for (Node *enemy_node = enemy_list->head->next; enemy_node;)
     {
@@ -222,7 +254,7 @@ void enemycheck() // 对于所有敌机，判断其与子弹、玩家是否碰�
             {
                 list_random_erase(enemy_list, enemy_node);
                 list_random_erase(bullet_list, bullet_node);
-                score++;//得分+1
+                score++; // 得分+1
             }
 
             bullet_node = next_bullet_node;
