@@ -252,12 +252,16 @@ void all_object_update() {
 
 				fprintf(stdout, "A bullet has been erased. (collision)\n");
 				fprintf(stdout, "A enemy has been erased. (collision)\n");
+
+				enemy = NULL; // 标记当前敌机已被删除。
+				break; // 不再与其他子弹进行碰撞判断。
 			}
 
 			bullet_node = next_bullet_node;
 		}
 
-		if (object_collision(enemy, player)) {
+		// 需要先判断当前敌机是否已被删除。
+		if (enemy && object_collision(enemy, player)) {
 			// --hp 或结束游戏等
 		}
 		
