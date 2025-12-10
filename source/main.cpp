@@ -121,7 +121,7 @@ void player_move() {
 void player_fire() {
 	Object *new_bullet = (Object *)malloc(sizeof(Object));
 	if (!new_bullet) {
-		fprintf(stderr, "内存分配失败。\n");
+		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -138,7 +138,7 @@ void player_fire() {
 void enemy_spawn() {
 	Object *new_enemy = (Object *)malloc(sizeof(Object));
 	if (!new_enemy) {
-		fprintf(stderr, "内存分配失败。\n");
+		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -167,7 +167,7 @@ void enemy_move() {
 		if (enemy->y > SCREEN_HEIGHT) {
 			list_random_erase(enemy_list, enemy_node);
 
-			fprintf(stdout, "An enemy has been erased. (out of bound)");
+			fprintf(stdout, "An enemy has been erased. (out of bound)\n");
 		}
 
 		enemy_node = next_enemy_node;
@@ -190,7 +190,7 @@ void bullet_move() {
 		if (bullet->y < -BULLET_HEIGHT) {
 			list_random_erase(bullet_list, bullet_node);
 
-			fprintf(stdout, "A bullet has been erased. (out of bound)");
+			fprintf(stdout, "A bullet has been erased. (out of bound)\n");
 		}
 
 		bullet_node = next_bullet_node;
@@ -250,8 +250,8 @@ void all_object_update() {
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
 
-				fprintf(stdout, "A bullet has been erased. (collision)");
-				fprintf(stdout, "A enemy has been erased. (collision)");
+				fprintf(stdout, "A bullet has been erased. (collision)\n");
+				fprintf(stdout, "A enemy has been erased. (collision)\n");
 			}
 
 			bullet_node = next_bullet_node;

@@ -37,7 +37,7 @@ typedef struct List {
 List *list_init() {
 	List *list = (List *)malloc(sizeof(List));
 	if (!list) {
-		fprintf(stderr, "内存分配失败。\n");
+		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
 	                                   
@@ -54,13 +54,13 @@ List *list_init() {
  */
 void list_append(List *list, void *data) {
 	if (!list) {
-		fprintf(stderr, "无效的链表。\n");
+		fprintf(stderr, "Invalid list.\n");
 		return;
 	}
 
 	Node *new_node = (Node *)malloc(sizeof(Node));
 	if (!new_node) {
-		fprintf(stderr, "内存分配失败。\n");
+		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -77,11 +77,11 @@ void list_append(List *list, void *data) {
  */
 void list_random_erase(List *list, Node *node) {
 	if (!list) {
-		fprintf(stderr, "无效的链表。\n");
+		fprintf(stderr, "Invalid list.\n");
 		return;
 	}
 	if (!node || node == list->head) {
-		fprintf(stderr, "无效的结点。\n");
+		fprintf(stderr, "Invalid node.\n");
 		return;
 	}
 
