@@ -11,7 +11,7 @@
 
 Object *player;
 List *enemy_list = NULL, *bullet_list = NULL;
-double min_bullet_gap, min_enemy_gap; // 单位：秒
+double min_fire_gap, min_enemy_spawn_gap; // 单位：秒
 clock_t last_bullet_spawn_time, last_enemy_spawn_time;
 int player_speed, enemy_speed, bullet_speed; // 单位：像素每帧
 // 上面的各类 speed 与 gap 参数不设置为常量，因为后续可能推出动态难度系统。
@@ -23,9 +23,13 @@ void player_move();
 
 /**
  * @brief 处理玩家开火。
- * @return 返回玩家是否成功开火。
  */
-bool player_fire();
+void player_fire();
+
+/**
+ * @brief 处理敌机生成。
+ */
+void enemy_spawn();
 
 /**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
@@ -42,8 +46,11 @@ int main() {
 	// 各类其他初始化。
 
 	player = (Object *)malloc(sizeof(Object));
+
+	player->x = 0, player->y = SCREEN_HEIGHT - PLAYER_HEIGHT, player->type = PLAYER; // 位置坐标为测试用值，正式游戏请修改。
+	
 	enemy_list = list_init(), bullet_list = list_init();
-	min_enemy_gap = min_bullet_gap = 0.5;
+	min_enemy_spawn_gap = min_fire_gap = 0.5;
 	player_speed = 4;
 	enemy_speed = bullet_speed = 0;
 	// 开火间隔、敌机生成间隔、速度这里都是乱写的，等待难度系统开发与测试。
@@ -101,15 +108,8 @@ void player_move() {
 
 /**
  * @brief 处理玩家开火。
- * @return 返回玩家是否成功开火。
  */
-bool player_fire() {
-	clock_t fire_time = clock();
-	const double bullet_gap = (double)(fire_time - last_bullet_spawn_time) / CLOCKS_PER_SEC;
-	if (bullet_gap < min_bullet_gap) {
-		return false;
-	}
-
+void player_fire() {
 	Object *new_bullet = (Object *)malloc(sizeof(Object));
 	if (!new_bullet) {
 		fprintf(stderr, "内存分配失败。\n");
@@ -121,10 +121,23 @@ bool player_fire() {
 	new_bullet->type = BULLET;
 
 	list_append(bullet_list, new_bullet);
-	
-	last_bullet_spawn_time = fire_time; // 更新最后一次子弹生成时间。
+}
 
-	return true;
+/**
+ * @brief 处理敌机生成。
+ */
+void enemy_spawn() {
+	Object *new_enemy = (Object *)malloc(sizeof(Object));
+	if (!new_enemy) {
+		fprintf(stderr, "内存分配失败。\n");
+		exit(EXIT_FAILURE);
+	}
+
+	new_enemy->x = rand() % (SCREEN_WIDTH - ENEMY_WIDTH);
+	new_enemy->y = -ENEMY_HEIGHT;
+	new_enemy->type = ENEMY;
+
+	list_append(enemy_list, new_enemy);
 }
 
 /**
@@ -134,29 +147,34 @@ void all_object_update() {
 
 	player_move();
 
-	// 如果开火键被按下，调用 player_fire() 函数，尝试开火。
+	// 检查开火键（空格键）是否被按下。
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-		if (player_fire()) {
-			fprintf(stdout, "开火成功。\n");
+		const clock_t fire_time = clock();
+		const double fire_gap = (double)(fire_time - last_bullet_spawn_time) / CLOCKS_PER_SEC;
+		
+		// 检查本次开火与上次开火的时间间隔是否足够。
+		if (fire_gap >= min_fire_gap) {
+			player_fire();
+			last_bullet_spawn_time = fire_time; // 更新最后一次子弹生成时间。
+
+			fprintf(stdout, "Bullet fired.\n");
 			// 给出开火成功成功的反馈，如音效等。
 		}
 		else {
-			fprintf(stdout, "开火失败。（可能原因：开火间隔过短等）\n");
+			fprintf(stdout, "Firing event failed. (Maybe not enough gap.)\n");
 			// 给出开火失败的反馈，如音效等。
 		}
 	}
 
-	// 生成新敌机（如果条件合适）。
-	if (false /* 生成敌机的条件合适 */) {
-		Object *new_enemy = (Object *)malloc(sizeof(Object));
-		if (!new_enemy) {
-			fprintf(stderr, "内存分配失败。\n");
-			exit(EXIT_FAILURE);
-		}
+	const clock_t enemy_spawn_time = clock();
+	const double enemy_spawn_gap = (double)(enemy_spawn_time - last_enemy_spawn_time) / CLOCKS_PER_SEC;
+	
+	// 检查本次敌机生成与上次敌机生成的时间间隔是否足够。
+	if (enemy_spawn_gap >= min_enemy_spawn_gap) {
+		enemy_spawn();
+		last_enemy_spawn_time = enemy_spawn_time;
 
-		// 设置新敌机初始位置。
-
-		list_append(enemy_list, new_enemy);
+		fprintf(stdout, "An enemy has been spawned.\n");
 	}
 
 	// 所有敌机向下移动，删除超出屏幕的敌机。
