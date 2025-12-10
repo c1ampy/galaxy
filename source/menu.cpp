@@ -1,4 +1,4 @@
-#include <graphics.h>
+ï»¿#include <graphics.h>
 #include <windows.h>                
 #include <string.h>                  
 
@@ -10,24 +10,24 @@ typedef struct MenuItem
     int hovered;
 } MenuItem;
 
-//¹¹Ôì¾ØĞÎ
+//æ„é€ çŸ©å½¢
 static RECT MakeRect(int x, int y, int w, int h)
 {
     RECT r; r.left = x; r.top = y; r.right = x + w; r.bottom = y + h;
     return r;
 }
 
-// ÃüÖĞ²âÊÔ
+// å‘½ä¸­æµ‹è¯•
 static int HitTest(const MenuItem* it, int x, int y)
 {
     POINT pt; pt.x = x; pt.y = y;
     return PtInRect(&it->rect, pt) != 0;
 }
 
-// »æÖÆÒ»¸ö°´Å¥
+// ç»˜åˆ¶ä¸€ä¸ªæŒ‰é’®
 static void DrawButton(const MenuItem* it)
 {
-    if (it->hovered) {                        // ĞüÍ£×´Ì¬£¬¸ßÁÁ
+    if (it->hovered) {                        // æ‚¬åœçŠ¶æ€ï¼Œé«˜äº®
         setfillcolor(RGB(80, 160, 255));
         setlinecolor(RGB(255, 255, 255));
         settextcolor(RGB(255, 255, 255));
@@ -41,12 +41,12 @@ static void DrawButton(const MenuItem* it)
     solidrectangle(it->rect.left, it->rect.top, it->rect.right, it->rect.bottom);
 
 
-    settextstyle(24, 0, "ËÎÌå");
+    settextstyle(24, 0, "å®‹ä½“");
     RECT tr = it->rect;
     drawtext(it->text, &tr, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
 
-//Ö÷²Ëµ¥
+//ä¸»èœå•
 int ShowMainMenu(int winW, int winH)
 {
     const int btnW = 240, btnH = 56, gap = 10;
@@ -56,7 +56,7 @@ int ShowMainMenu(int winW, int winH)
 
     MenuItem items[count];
 
-    // ³õÊ¼»¯°´Å¥
+    // åˆå§‹åŒ–æŒ‰é’®
     strcpy_s(items[0].text, "Start Game");
     items[0].rect = MakeRect(centerX, baseY + 0 * (btnH + gap), btnW, btnH);
     items[0].hovered = 0;
@@ -72,12 +72,12 @@ int ShowMainMenu(int winW, int winH)
     IMAGE imgBg;
     const int hasBg = (loadimage(&imgBg, "bg.bmp") == 0);
 
-    BeginBatchDraw();                                      //¿ªÊ¼ÅúÁ¿»æÖÆ
-    //´¦ÀíÊó±êµÄÏûÏ¢
+    BeginBatchDraw();                                      //å¼€å§‹æ‰¹é‡ç»˜åˆ¶
+    //å¤„ç†é¼ æ ‡çš„æ¶ˆæ¯
     for (;;) {
         ExMessage msg;
         while (peekmessage(&msg, EM_MOUSE, true)) {
-            if (msg.message == WM_MOUSEMOVE) {   //¼ì²âÒÆ¶¯          
+            if (msg.message == WM_MOUSEMOVE) {   //æ£€æµ‹ç§»åŠ¨          
                 int anyHover = 0;
                 for (int i = 0; i < count; ++i) {
                     int h = HitTest(&items[i], msg.x, msg.y);
@@ -89,7 +89,7 @@ int ShowMainMenu(int winW, int winH)
                         items[i].hovered = 0;
                 }
             }
-            else if (msg.message == WM_LBUTTONDOWN) {      //¼ì²âµã»÷
+            else if (msg.message == WM_LBUTTONDOWN) {      //æ£€æµ‹ç‚¹å‡»
                 for (int i = 0; i < count; ++i) {
                     if (HitTest(&items[i], msg.x, msg.y)) {
                         EndBatchDraw();
@@ -103,9 +103,9 @@ int ShowMainMenu(int winW, int winH)
         
             setfillcolor(RGB(10, 20, 60));
             solidrectangle(0, 0, winW, winH);
-            settextstyle(36, 0, "ËÎÌå");
+            settextstyle(36, 0, "å®‹ä½“");
             settextcolor(RGB(255, 255, 200));
-            outtextxy(winW / 2 - 180, winH / 4 - 40, "·É»ú´óÕ½");
+            outtextxy(winW / 2 - 180, winH / 4 - 40, "é£æœºå¤§æˆ˜");
         }
 
         for (int i = 0; i < count; ++i) DrawButton(&items[i]);
@@ -123,19 +123,19 @@ int main()
     const int W = 480, H = 640;
     initgraph(W, H);
     setbkmode(TRANSPARENT);
-    // µ÷ÓÃÖ÷²Ëµ¥
+    // è°ƒç”¨ä¸»èœå•
     int choice = ShowMainMenu(W, H);
 
     setfillcolor(RGB(0, 0, 0));
     solidrectangle(0, 0, W, H);
-    settextstyle(28, 0, "ËÎÌå");
+    settextstyle(28, 0, "å®‹ä½“");
     settextcolor(RGB(255, 255, 255));
     if (choice == 0)
-        outtextxy(80, H / 2 - 20, "ÄãÑ¡ÔñÁË£ºStart Game");
+        outtextxy(80, H / 2 - 20, "ä½ é€‰æ‹©äº†ï¼šStart Game");
     else if (choice == 1)
-        outtextxy(80, H / 2 - 20, "ÄãÑ¡ÔñÁË£ºOptions");
+        outtextxy(80, H / 2 - 20, "ä½ é€‰æ‹©äº†ï¼šOptions");
     else
-        outtextxy(80, H / 2 - 20, "ÄãÑ¡ÔñÁË£ºExit");
+        outtextxy(80, H / 2 - 20, "ä½ é€‰æ‹©äº†ï¼šExit");
 
     Sleep(1000);
     closegraph();
