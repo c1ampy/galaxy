@@ -2,8 +2,7 @@
 #ifndef KEYBOARDINPUT_H
 #define KEYBOARDINPUT_H
 
-//还没配置好,先写着后面配置
-// #include <windows.h>
+#include <windows.h>
 
 //枚举,定义鼠标按键状态
 typedef enum {
