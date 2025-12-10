@@ -32,9 +32,9 @@ typedef struct Object {
 /**
  * @brief 判断游戏对象是否碰撞。
  */
-bool object_collide(const Object *obj1, const Object *obj2) {
+bool object_collision(const Object *obj1, const Object *obj2) {
 	if (!obj1 || !obj2) {
-		fprintf(stderr, "无效的对象指针。\n");
+		fprintf(stderr, "Invalid object pointer.\n");
 		return false;
 	}
 
@@ -54,7 +54,7 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			height1 = BULLET_HEIGHT;
 			break;
 		default:
-			fprintf(stderr, "对象类型错误。\n");
+			fprintf(stderr, "Object type error.\n");
 			return false;
 	}
 
@@ -72,7 +72,7 @@ bool object_collide(const Object *obj1, const Object *obj2) {
 			height2 = BULLET_HEIGHT;
 			break;
 		default:
-			fprintf(stderr, "对象类型错误。\n");
+			fprintf(stderr, "Object type error.\n");
 			return false;
 	}
 

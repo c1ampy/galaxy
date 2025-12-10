@@ -2,7 +2,7 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-//枚举六种主要音效类型(待定)
+//枚举六种主要音效类型（待定）
 typedef enum {
     SOUND_SHOOT = 0,      //射击音效
     SOUND_EXPLODE = 1,    //爆炸音效
