@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <windows.h>
 #include "list.h"
 #include "object.h"
-#include <windows.h>
 
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 800
@@ -10,18 +11,31 @@
 
 Object *player;
 List *enemy_list = NULL, *bullet_list = NULL;
+double min_bullet_gap, min_enemy_gap; // 单位：秒
+clock_t last_bullet_spawn_time, last_enemy_spawn_time;
 int player_speed, enemy_speed, bullet_speed; // 单位：像素每帧
-// 上面的各类 speed 参数不设置为常量，因为后续可能推出动态难度系统。
+// 上面的各类 speed 与 gap 参数不设置为常量，因为后续可能推出动态难度系统。
+
+/**
+ * @brief 处理玩家移动。
+ */
+void player_move();
+
+/**
+ * @brief 处理玩家开火。
+ * @return 返回玩家是否成功开火。
+ */
+bool player_fire();
 
 /**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
-void game_update();
+void all_object_update();
 
 /**
  * @brief 对当前帧，渲染窗口。
  */
-void game_render();
+void all_object_render();
 
 int main() {
 	
@@ -29,14 +43,15 @@ int main() {
 
 	player = (Object *)malloc(sizeof(Object));
 	enemy_list = list_init(), bullet_list = list_init();
+	min_enemy_gap = min_bullet_gap = 0.5;
 	player_speed = 4;
 	enemy_speed = bullet_speed = 0;
-	// 速度这里是乱写的，等待难度系统开发与测试。
+	// 开火间隔、敌机生成间隔、速度这里都是乱写的，等待难度系统开发与测试。
 
 	bool running = true;
 	while (running) {
-		game_update();
-		game_render();
+		all_object_update();
+		all_object_render();
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
 			// 之后可以拓展出一个暂停界面。
 			fprintf(stdout, "Exiting.\n");
@@ -53,39 +68,82 @@ int main() {
 }
 
 /**
- * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
+ * @brief 处理玩家移动。
  */
-void game_update() {
-
-	// 处理玩家移动，等待后续开发。
+void player_move() {
 	if (GetAsyncKeyState('W') & 0x8000 || GetAsyncKeyState(VK_UP) & 0x8000) {
-		
+		player->y -= player_speed;
 	}
 	if (GetAsyncKeyState('S') & 0x8000 || GetAsyncKeyState(VK_DOWN) & 0x8000) {
-		
+		player->y += player_speed;
 	}
 	if (GetAsyncKeyState('A') & 0x8000 || GetAsyncKeyState(VK_LEFT) & 0x8000) {
-		
+		player->x -= player_speed;
 	}
 	if (GetAsyncKeyState('D') & 0x8000 || GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-		
+		player->x += player_speed;
 	}
 
-	if (false /* 玩家的部分模型超出边界 */) {
-		// 强制拉回。
+	// 超出边界时拉回
+	if (player->y < 0) {
+		player->y = 0;
+	}
+	if (player->y + PLAYER_HEIGHT > SCREEN_HEIGHT) {
+		player->y = SCREEN_HEIGHT - PLAYER_HEIGHT;
+	}
+	if (player->x < 0) {
+		player->x = 0;
+	}
+	if (player->x + PLAYER_WIDTH > SCREEN_WIDTH) {
+		player->x = SCREEN_WIDTH - PLAYER_WIDTH;
+	}
+}
+
+/**
+ * @brief 处理玩家开火。
+ * @return 返回玩家是否成功开火。
+ */
+bool player_fire() {
+	clock_t fire_time = clock();
+	const double bullet_gap = (double)(fire_time - last_bullet_spawn_time) / CLOCKS_PER_SEC;
+	if (bullet_gap < min_bullet_gap) {
+		return false;
 	}
 
-	// 生成新子弹（如果开火键（暂定为空格键）被按下）。
+	Object *new_bullet = (Object *)malloc(sizeof(Object));
+	if (!new_bullet) {
+		fprintf(stderr, "内存分配失败。\n");
+		exit(EXIT_FAILURE);
+	}
+
+	new_bullet->x = player->x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2;
+	new_bullet->y = player->y - BULLET_HEIGHT;
+	new_bullet->type = BULLET;
+
+	list_append(bullet_list, new_bullet);
+	
+	last_bullet_spawn_time = fire_time; // 更新最后一次子弹生成时间。
+
+	return true;
+}
+
+/**
+ * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
+ */
+void all_object_update() {
+
+	player_move();
+
+	// 如果开火键被按下，调用 player_fire() 函数，尝试开火。
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-		Object *new_bullet = (Object *)malloc(sizeof(Object));
-		if (!new_bullet) {
-			fprintf(stderr, "内存分配失败。\n");
-			exit(EXIT_FAILURE);
+		if (player_fire()) {
+			fprintf(stdout, "开火成功。\n");
+			// 给出开火成功成功的反馈，如音效等。
 		}
-
-		// 设置新子弹初始位置。
-
-		list_append(bullet_list, new_bullet);
+		else {
+			fprintf(stdout, "开火失败。（可能原因：开火间隔过短等）\n");
+			// 给出开火失败的反馈，如音效等。
+		}
 	}
 
 	// 生成新敌机（如果条件合适）。
@@ -156,4 +214,11 @@ void game_update() {
 		
 		enemy_node = next_enemy_node;
 	}
+}
+
+/**
+ * @brief 对当前帧，渲染窗口。
+ */
+void all_object_render() {
+
 }
