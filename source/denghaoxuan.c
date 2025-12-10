@@ -19,8 +19,8 @@
 
 #define PLAYER_WIDTH 50
 #define PLAYER_HEIGHT 50
-#define ENIMY_WIDTH 40
-#define ENIMY_HEIGHT 40
+#define ENEMY_WIDTH 40
+#define ENEMY_HEIGHT 40
 #define BULLET_WIDTH 10
 #define BULLET_HEIGHT 20
 
@@ -30,7 +30,7 @@ int score = 0;
 typedef enum ObjectType
 {
     PLAYER,
-    ENIMY,
+    ENEMY,
     BULLET
 } ObjectType;
 
@@ -67,8 +67,8 @@ bool object_collide(const Object *obj1, const Object *obj2)
         height1 = PLAYER_HEIGHT;
         break;
     case ENEMY:
-        width1 = ENIMY_WIDTH;
-        height1 = ENIMY_HEIGHT;
+        width1 = ENEMY_WIDTH;
+        height1 = ENEMY_HEIGHT;
         break;
     case BULLET:
         width1 = BULLET_WIDTH;
@@ -86,8 +86,8 @@ bool object_collide(const Object *obj1, const Object *obj2)
         height2 = PLAYER_HEIGHT;
         break;
     case ENEMY:
-        width2 = ENIMY_WIDTH;
-        height2 = ENIMY_HEIGHT;
+        width2 = ENEMY_WIDTH;
+        height2 = ENEMY_HEIGHT;
         break;
     case BULLET:
         width2 = BULLET_WIDTH;
