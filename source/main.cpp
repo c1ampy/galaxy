@@ -32,6 +32,16 @@ void player_fire();
 void enemy_spawn();
 
 /**
+ * @brief 处理敌机向下移动，并删除超出屏幕底端的敌机。
+ */
+void enemy_move();
+
+/**
+ * @brief 处理子弹向上移动，并删除超出屏幕顶端的子弹。
+ */
+void bullet_move();
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
 void all_object_update();
@@ -51,8 +61,7 @@ int main() {
 	
 	enemy_list = list_init(), bullet_list = list_init();
 	min_enemy_spawn_gap = min_fire_gap = 0.5;
-	player_speed = 4;
-	enemy_speed = bullet_speed = 0;
+	player_speed = 4, enemy_speed = 3, bullet_speed = 6;
 	// 开火间隔、敌机生成间隔、速度这里都是乱写的，等待难度系统开发与测试。
 
 	bool running = true;
@@ -141,6 +150,54 @@ void enemy_spawn() {
 }
 
 /**
+ * @brief 处理敌机向下移动，并删除超出屏幕底端的敌机。
+ */
+void enemy_move() {
+	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+		/**
+		 * 此处不能在 for 循环语句中写入 enemy_node = enemy_node->next，
+		 * 因为在进入下一次循环之前，当前的 enemy_node 指针所指向的结点可能已经被释放，
+		 * 若再次访问 enemy_node->next 会引发段错误。
+		 * 应该额外用一个指针变量 next_enemy_node 提前记录后继节点的地址。
+		 */
+		Node *next_enemy_node = enemy_node->next;
+		Object *enemy = (Object *)enemy_node->data;
+
+		enemy->y += enemy_speed;
+		if (enemy->y > SCREEN_HEIGHT) {
+			list_random_erase(enemy_list, enemy_node);
+
+			fprintf(stdout, "An enemy has been erased. (out of bound)");
+		}
+
+		enemy_node = next_enemy_node;
+	}
+}
+
+/**
+ * @brief 处理子弹向上移动，并删除超出屏幕顶端的子弹。
+ */
+void bullet_move() {
+	for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
+		/**
+		 * 创建指针变量 next_bullet_node 原因：
+		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
+		 */
+		Node *next_bullet_node = bullet_node->next;
+		Object *bullet = (Object *)bullet_node->data;
+
+		bullet->y -= bullet_speed;
+		if (bullet->y < -BULLET_HEIGHT) {
+			list_random_erase(bullet_list, bullet_node);
+
+			fprintf(stdout, "A bullet has been erased. (out of bound)");
+		}
+
+		bullet_node = next_bullet_node;
+	}
+}
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
 void all_object_update() {
@@ -157,11 +214,11 @@ void all_object_update() {
 			player_fire();
 			last_bullet_spawn_time = fire_time; // 更新最后一次子弹生成时间。
 
-			fprintf(stdout, "Bullet fired.\n");
+			fprintf(stdout, "A bullet has been fired.\n");
 			// 给出开火成功成功的反馈，如音效等。
 		}
 		else {
-			fprintf(stdout, "Firing event failed. (Maybe not enough gap.)\n");
+			fprintf(stdout, "Firing event has been denied. (not enough gap)\n");
 			// 给出开火失败的反馈，如音效等。
 		}
 	}
@@ -177,37 +234,8 @@ void all_object_update() {
 		fprintf(stdout, "An enemy has been spawned.\n");
 	}
 
-	// 所有敌机向下移动，删除超出屏幕的敌机。
-	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
-		/**
-		 * 此处不能在 for 循环语句中写入 enemy_node = enemy_node->next，
-		 * 因为在进入下一次循环之前，当前的 enemy_node 指针所指向的结点可能已经被释放，
-		 * 若再次访问 enemy_node->next 会引发段错误。
-		 * 应该额外用一个指针变量 next_enemy_node 提前记录后继节点的地址。
-		 */
-		Node *next_enemy_node = enemy_node->next;
-		Object *enemy = (Object *)enemy_node->data;
-
-		enemy->y += enemy_speed; // 如果后续有专门的移动和边界检测一体化 move() 函数就再说。
-		if (enemy->y > SCREEN_HEIGHT) {
-			list_random_erase(enemy_list, enemy_node);
-		}
-
-		enemy_node = next_enemy_node;
-	}
-
-	// 所有子弹向上移动，删除超出屏幕的子弹。
-	for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
-		Node *next_bullet_node = bullet_node->next; // 同上
-		Object *bullet = (Object *)bullet_node->data;
-
-		bullet->y -= bullet_speed; // 如果后续有专门的移动和边界检测一体化 move() 函数就再说。
-		if (bullet->y + BULLET_HEIGHT < 0) {
-			list_random_erase(bullet_list, bullet_node);
-		}
-
-		bullet_node = next_bullet_node;
-	}
+	enemy_move();
+	bullet_move();
 
 	// 对于所有敌机，判断其与子弹、玩家是否碰撞。
 	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
@@ -221,6 +249,9 @@ void all_object_update() {
 			if (object_collide(enemy, bullet)) {
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
+
+				fprintf(stdout, "A bullet has been erased. (collision)");
+				fprintf(stdout, "A enemy has been erased. (collision)");
 			}
 
 			bullet_node = next_bullet_node;
