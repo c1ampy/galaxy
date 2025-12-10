@@ -35,6 +35,6 @@ typedef struct Object {
 /**
  * @brief 判断游戏对象是否碰撞。
  */
-bool object_collide(const Object *obj1, const Object *obj2);
+bool object_collision(const Object *obj1, const Object *obj2);
 
 #endif /* OBJECT_H */
