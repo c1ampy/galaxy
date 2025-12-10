@@ -43,7 +43,7 @@ typedef struct Object
     ObjectType type;
 } Object;
 
-int startTime = 0;
+int startTime;
 
 Object *player;
 List *enemy_list = NULL, *bullet_list = NULL;

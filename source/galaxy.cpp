@@ -25,7 +25,7 @@ void game_render();
 
 int main() {
 	
-	// 各类其他初始化。
+	// 各类其他初始化。记得初始化startTime
 
 	player = (Object *)malloc(sizeof(Object));
 	enemy_list = list_init(), bullet_list = list_init();
