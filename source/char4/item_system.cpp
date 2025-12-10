@@ -1,41 +1,41 @@
 #include "item_system.h"
-#include <string.h>
+#include <cstring>
 
-// é“å…·ä¿¡æ¯æ•°ç»„
+// µÀ¾ßĞÅÏ¢Êı×é
 static const ItemInfo item_info_list[ITEM_MAX_TYPES] = {
-    {ITEM_NONE, 0, 0, 0, 0},                                    // æ— æ•ˆé“å…·
-    {ITEM_LIFE, 1, 0, 0, 5},                                    // ç”Ÿå‘½æ¢å¤ï¼š+1ç”Ÿå‘½ï¼Œæ— æŒç»­æ—¶é—´ï¼Œæ— å†·å´ï¼Œæœ€å¤§å †å 5ä¸ª
-    {ITEM_WEAPON_UPGRADE, 1, 0, 180, 3},                        // æ­¦å™¨å‡çº§ï¼š+1çº§ï¼Œæ— æŒç»­æ—¶é—´ï¼Œ3ç§’å†·å´ï¼Œæœ€å¤§å †å 3ä¸ª
-    {ITEM_SHIELD, 100, 600, 300, 1},                            // æŠ¤ç›¾ï¼š100ç‚¹æŠ¤ç›¾ï¼Œ10ç§’æŒç»­æ—¶é—´ï¼Œ5ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
-    {ITEM_BOMB, 1, 0, 120, 5},                                  // ç‚¸å¼¹ï¼š1ä¸ªç‚¸å¼¹ï¼Œæ— æŒç»­æ—¶é—´ï¼Œ2ç§’å†·å´ï¼Œæœ€å¤§å †å 5ä¸ª
-    {ITEM_COIN_DOUBLE, 2, 900, 1800, 1},                        // é‡‘å¸ç¿»å€ï¼š2å€é‡‘å¸ï¼Œ15ç§’æŒç»­æ—¶é—´ï¼Œ30ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
-    {ITEM_SPEED_UP, 50, 600, 300, 1},                           // é€Ÿåº¦æå‡ï¼š50%é€Ÿåº¦ï¼Œ10ç§’æŒç»­æ—¶é—´ï¼Œ5ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
-    {ITEM_INVINCIBLE, 1, 300, 1800, 1},                         // æ— æ•ŒçŠ¶æ€ï¼šæ— æ•Œï¼Œ5ç§’æŒç»­æ—¶é—´ï¼Œ30ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
-    {ITEM_MULTI_SHOT, 2, 900, 1800, 1},                         // å¤šé‡å°„å‡»ï¼š2å‘å­å¼¹ï¼Œ15ç§’æŒç»­æ—¶é—´ï¼Œ30ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
-    {ITEM_HOMING_MISSILE, 1, 600, 1200, 1}                      // è¿½è¸ªå¯¼å¼¹ï¼š1å‘è¿½è¸ªå¯¼å¼¹ï¼Œ10ç§’æŒç»­æ—¶é—´ï¼Œ20ç§’å†·å´ï¼Œæœ€å¤§å †å 1ä¸ª
+    {ITEM_NONE, 0, 0, 0, 0},                                    // ÎŞĞ§µÀ¾ß
+    {ITEM_LIFE, 1, 0, 0, 5},                                    // ÉúÃü»Ö¸´£º+1ÉúÃü£¬ÎŞ³ÖĞøÊ±¼ä£¬ÎŞÀäÈ´£¬×î´ó¶Ñµş5¸ö
+    {ITEM_WEAPON_UPGRADE, 1, 0, 180, 3},                        // ÎäÆ÷Éı¼¶£º+1¼¶£¬ÎŞ³ÖĞøÊ±¼ä£¬3ÃëÀäÈ´£¬×î´ó¶Ñµş3¸ö
+    {ITEM_SHIELD, 100, 600, 300, 1},                            // »¤¶Ü£º100µã»¤¶Ü£¬10Ãë³ÖĞøÊ±¼ä£¬5ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
+    {ITEM_BOMB, 1, 0, 120, 5},                                  // Õ¨µ¯£º1¸öÕ¨µ¯£¬ÎŞ³ÖĞøÊ±¼ä£¬2ÃëÀäÈ´£¬×î´ó¶Ñµş5¸ö
+    {ITEM_COIN_DOUBLE, 2, 900, 1800, 1},                        // ½ğ±Ò·­±¶£º2±¶½ğ±Ò£¬15Ãë³ÖĞøÊ±¼ä£¬30ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
+    {ITEM_SPEED_UP, 50, 600, 300, 1},                           // ËÙ¶ÈÌáÉı£º50%ËÙ¶È£¬10Ãë³ÖĞøÊ±¼ä£¬5ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
+    {ITEM_INVINCIBLE, 1, 300, 1800, 1},                         // ÎŞµĞ×´Ì¬£ºÎŞµĞ£¬5Ãë³ÖĞøÊ±¼ä£¬30ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
+    {ITEM_MULTI_SHOT, 2, 900, 1800, 1},                         // ¶àÖØÉä»÷£º2·¢×Óµ¯£¬15Ãë³ÖĞøÊ±¼ä£¬30ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
+    {ITEM_HOMING_MISSILE, 1, 600, 1200, 1}                      // ×·×Ùµ¼µ¯£º1·¢×·×Ùµ¼µ¯£¬10Ãë³ÖĞøÊ±¼ä£¬20ÃëÀäÈ´£¬×î´ó¶Ñµş1¸ö
 };
 
-// é™æ€å…¨å±€å˜é‡
-static uint8_t item_counts[ITEM_MAX_TYPES] = {0};             // é“å…·æ•°é‡
-static ItemEffect active_effects[ITEM_MAX_TYPES] = {0};        // æ¿€æ´»çš„é“å…·æ•ˆæœ
-static uint8_t active_effect_count = 0;                       // æ¿€æ´»çš„æ•ˆæœæ•°é‡
+// ¾²Ì¬È«¾Ö±äÁ¿
+static uint8_t item_counts[ITEM_MAX_TYPES] = { 0 };             // µÀ¾ßÊıÁ¿
+static ItemEffect active_effects[ITEM_MAX_TYPES] = {  };        // ¼¤»îµÄµÀ¾ßĞ§¹û
+static uint8_t active_effect_count = 0;                       // ¼¤»îµÄĞ§¹ûÊıÁ¿
 
-// é“å…·ç³»ç»Ÿåˆå§‹åŒ–
+// µÀ¾ßÏµÍ³³õÊ¼»¯
 void item_system_init(void) {
-    memset(item_counts, 0, sizeof(item_counts));
-    memset(active_effects, 0, sizeof(active_effects));
+    std::memset(item_counts, 0, sizeof(item_counts));
+    std::memset(active_effects, 0, sizeof(active_effects));
     active_effect_count = 0;
 }
 
-// è·å–é“å…·ä¿¡æ¯
-const ItemInfo *item_system_get_item_info(ItemType type) {
+// »ñÈ¡µÀ¾ßĞÅÏ¢
+const ItemInfo* item_system_get_item_info(ItemType type) {
     if (type >= ITEM_NONE && type < ITEM_MAX_TYPES) {
         return &item_info_list[type];
     }
-    return NULL;
+    return nullptr;
 }
 
-// è·å–é“å…·æ•°é‡
+// »ñÈ¡µÀ¾ßÊıÁ¿
 uint8_t item_system_get_item_count(ItemType type) {
     if (type >= ITEM_NONE && type < ITEM_MAX_TYPES) {
         return item_counts[type];
@@ -43,12 +43,12 @@ uint8_t item_system_get_item_count(ItemType type) {
     return 0;
 }
 
-// æ·»åŠ é“å…·
+// Ìí¼ÓµÀ¾ß
 void item_system_add_item(ItemType type, uint8_t count) {
     if (type > ITEM_NONE && type < ITEM_MAX_TYPES) {
-        const ItemInfo *info = &item_info_list[type];
+        const ItemInfo* info = &item_info_list[type];
         uint8_t new_count = item_counts[type] + count;
-        // é™åˆ¶æœ€å¤§å †å æ•°é‡
+        // ÏŞÖÆ×î´ó¶ÑµşÊıÁ¿
         if (new_count > info->max_stack) {
             new_count = info->max_stack;
         }
@@ -56,39 +56,39 @@ void item_system_add_item(ItemType type, uint8_t count) {
     }
 }
 
-// æ£€æŸ¥é“å…·æ˜¯å¦å¯ä»¥ä½¿ç”¨
+// ¼ì²éµÀ¾ßÊÇ·ñ¿ÉÒÔÊ¹ÓÃ
 static uint8_t can_use_item(ItemType type) {
-    const ItemInfo *info = &item_info_list[type];
+    const ItemInfo* info = &item_info_list[type];
     if (item_counts[type] == 0) {
-        return 0; // é“å…·æ•°é‡ä¸è¶³
+        return 0; // µÀ¾ßÊıÁ¿²»×ã
     }
-    
-    // æ£€æŸ¥å†·å´æ—¶é—´
+
+    // ¼ì²éÀäÈ´Ê±¼ä
     for (uint8_t i = 0; i < active_effect_count; i++) {
         if (active_effects[i].type == type) {
             if (active_effects[i].remaining_cooldown > 0) {
-                return 0; // å†·å´æ—¶é—´æœªç»“æŸ
+                return 0; // ÀäÈ´Ê±¼äÎ´½áÊø
             }
             break;
         }
     }
-    
+
     return 1;
 }
 
-// æ·»åŠ æ•ˆæœåˆ°æ¿€æ´»åˆ—è¡¨
+// Ìí¼ÓĞ§¹ûµ½¼¤»îÁĞ±í
 static void add_effect(ItemType type, uint32_t duration) {
-    // æ£€æŸ¥æ˜¯å¦å·²å­˜åœ¨è¯¥æ•ˆæœ
+    // ¼ì²éÊÇ·ñÒÑ´æÔÚ¸ÃĞ§¹û
     for (uint8_t i = 0; i < active_effect_count; i++) {
         if (active_effects[i].type == type) {
-            // æ›´æ–°æ•ˆæœæŒç»­æ—¶é—´
+            // ¸üĞÂĞ§¹û³ÖĞøÊ±¼ä
             active_effects[i].remaining_time = duration;
             active_effects[i].stack_count = 1;
             return;
         }
     }
-    
-    // æ·»åŠ æ–°æ•ˆæœ
+
+    // Ìí¼ÓĞÂĞ§¹û
     if (active_effect_count < ITEM_MAX_TYPES) {
         active_effects[active_effect_count].type = type;
         active_effects[active_effect_count].remaining_time = duration;
@@ -98,52 +98,52 @@ static void add_effect(ItemType type, uint32_t duration) {
     }
 }
 
-// ä½¿ç”¨é“å…·
+// Ê¹ÓÃµÀ¾ß
 uint8_t item_system_use_item(ItemType type) {
     if (!can_use_item(type)) {
-        return 0; // æ— æ³•ä½¿ç”¨é“å…·
+        return 0; // ÎŞ·¨Ê¹ÓÃµÀ¾ß
     }
-    
-    const ItemInfo *info = &item_info_list[type];
-    
-    // å‡å°‘é“å…·æ•°é‡
+
+    const ItemInfo* info = &item_info_list[type];
+
+    // ¼õÉÙµÀ¾ßÊıÁ¿
     item_counts[type]--;
-    
-    // æ¿€æ´»æ•ˆæœï¼ˆå¦‚æœæœ‰æŒç»­æ—¶é—´ï¼‰
+
+    // ¼¤»îĞ§¹û£¨Èç¹ûÓĞ³ÖĞøÊ±¼ä£©
     if (info->duration > 0) {
         add_effect(type, info->duration);
     }
-    
-    return 1; // é“å…·ä½¿ç”¨æˆåŠŸ
+
+    return 1; // µÀ¾ßÊ¹ÓÃ³É¹¦
 }
 
-// æ›´æ–°é“å…·æ•ˆæœ
+// ¸üĞÂµÀ¾ßĞ§¹û
 void item_system_update(void) {
-    // æ›´æ–°æ¿€æ´»æ•ˆæœ
+    // ¸üĞÂ¼¤»îĞ§¹û
     for (uint8_t i = 0; i < active_effect_count; i++) {
-        // æ›´æ–°æŒç»­æ—¶é—´
+        // ¸üĞÂ³ÖĞøÊ±¼ä
         if (active_effects[i].remaining_time > 0) {
             active_effects[i].remaining_time--;
         }
-        
-        // æ›´æ–°å†·å´æ—¶é—´
+
+        // ¸üĞÂÀäÈ´Ê±¼ä
         if (active_effects[i].remaining_cooldown > 0) {
             active_effects[i].remaining_cooldown--;
         }
-        
-        // ç§»é™¤å·²è¿‡æœŸçš„æ•ˆæœ
+
+        // ÒÆ³ıÒÑ¹ıÆÚµÄĞ§¹û
         if (active_effects[i].remaining_time == 0 && active_effects[i].remaining_cooldown == 0) {
-            // ä»æ•°ç»„ä¸­ç§»é™¤
+            // ´ÓÊı×éÖĞÒÆ³ı
             for (uint8_t j = i; j < active_effect_count - 1; j++) {
                 active_effects[j] = active_effects[j + 1];
             }
             active_effect_count--;
-            i--; // è°ƒæ•´ç´¢å¼•
+            i--; // µ÷ÕûË÷Òı
         }
     }
 }
 
-// æ£€æŸ¥é“å…·æ•ˆæœæ˜¯å¦æ¿€æ´»
+// ¼ì²éµÀ¾ßĞ§¹ûÊÇ·ñ¼¤»î
 uint8_t item_system_is_effect_active(ItemType type) {
     for (uint8_t i = 0; i < active_effect_count; i++) {
         if (active_effects[i].type == type && active_effects[i].remaining_time > 0) {
@@ -153,7 +153,7 @@ uint8_t item_system_is_effect_active(ItemType type) {
     return 0;
 }
 
-// è·å–é“å…·æ•ˆæœå‰©ä½™æ—¶é—´
+// »ñÈ¡µÀ¾ßĞ§¹ûÊ£ÓàÊ±¼ä
 uint32_t item_system_get_effect_remaining_time(ItemType type) {
     for (uint8_t i = 0; i < active_effect_count; i++) {
         if (active_effects[i].type == type && active_effects[i].remaining_time > 0) {
@@ -163,20 +163,20 @@ uint32_t item_system_get_effect_remaining_time(ItemType type) {
     return 0;
 }
 
-// é‡ç½®é“å…·ç³»ç»Ÿ
+// ÖØÖÃµÀ¾ßÏµÍ³
 void item_system_reset(void) {
-    memset(item_counts, 0, sizeof(item_counts));
-    memset(active_effects, 0, sizeof(active_effects));
+    std::memset(item_counts, 0, sizeof(item_counts));
+    std::memset(active_effects, 0, sizeof(active_effects));
     active_effect_count = 0;
 }
 
-// è·å–æ‰€æœ‰æ¿€æ´»çš„é“å…·æ•ˆæœ
-void item_system_get_active_effects(ItemEffect effects[], uint8_t *count) {
-    if (effects == NULL || count == NULL) {
+// »ñÈ¡ËùÓĞ¼¤»îµÄµÀ¾ßĞ§¹û
+void item_system_get_active_effects(ItemEffect effects[], uint8_t* count) {
+    if (effects == nullptr || count == nullptr) {
         return;
     }
-    
-    // å¤åˆ¶æ¿€æ´»çš„æ•ˆæœåˆ°è¾“å‡ºæ•°ç»„
+
+    // ¸´ÖÆ¼¤»îµÄĞ§¹ûµ½Êä³öÊı×é
     uint8_t valid_effects = 0;
     for (uint8_t i = 0; i < active_effect_count; i++) {
         if (active_effects[i].remaining_time > 0) {
@@ -184,6 +184,6 @@ void item_system_get_active_effects(ItemEffect effects[], uint8_t *count) {
             valid_effects++;
         }
     }
-    
+
     *count = valid_effects;
 }
