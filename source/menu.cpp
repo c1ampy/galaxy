@@ -2,7 +2,7 @@
 #include <windows.h>                
 #include <string.h>                  
 
-// 按钮的结构
+// The struct of
 typedef struct MenuItem
 {
     char text[64];
