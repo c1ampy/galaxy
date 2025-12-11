@@ -15,7 +15,7 @@
 #include "render.h"
 
 // 在一个编译单元里定义纹理实例，其他文件只会使用 extern 声明。
-RenderTextures g_renderTextures = { 0 };
+RenderTextures g_render_textures = { 0 };
 
 /**
  * @brief 创建 EasyX 窗口
@@ -38,8 +38,8 @@ void render_shutdown() {
 
 int render_load_menu_texture(const wchar_t *menu_background_path) {
 	// 如果没有菜单背景图片就用纯色的窗口
-	return load_internal_texture(&g_renderTextures.menu_background,
-		&g_renderTextures.menu_background_ok,
+	return load_internal_texture(&g_render_textures.menu_background,
+		&g_render_textures.menu_background_ok,
 		menu_background_path);
 }
 
@@ -47,17 +47,15 @@ int render_load_gameplay_textures(
 	const wchar_t *menu_background_path,
 	const wchar_t *player_path,
 	const wchar_t *enemy_path,
-	const wchar_t *player_bullet_path,
-	const wchar_t *enemy_bullet_path) {
+	const wchar_t *bullet_path) {
 	
 	// 游戏内所有贴图的批量加载
-	int ok1 = load_internal_texture(&g_renderTextures.game_background, &g_renderTextures.game_background_ok, menu_background_path);
-	int ok2 = load_internal_texture(&g_renderTextures.player, &g_renderTextures.player_ok, player_path);
-	int ok3 = load_internal_texture(&g_renderTextures.enemy, &g_renderTextures.enemy_ok, enemy_path);
-	int ok4 = load_internal_texture(&g_renderTextures.player_bullet, &g_renderTextures.player_bullet_ok, player_bullet_path);
-	int ok5 = load_internal_texture(&g_renderTextures.enemy_bullet, &g_renderTextures.enemy_bullet_ok, enemy_bullet_path);
+	int ok1 = load_internal_texture(&g_render_textures.game_background, &g_render_textures.game_background_ok, menu_background_path);
+	int ok2 = load_internal_texture(&g_render_textures.player, &g_render_textures.player_ok, player_path);
+	int ok3 = load_internal_texture(&g_render_textures.enemy, &g_render_textures.enemy_ok, enemy_path);
+	int ok4 = load_internal_texture(&g_render_textures.bullet, &g_render_textures.bullet_ok, bullet_path);
 
-	return ok1 & ok2 & ok3 & ok4 & ok5;
+	return ok1 & ok2 & ok3 & ok4;
 }
 
 /**
@@ -112,8 +110,8 @@ static void menu_render_frame(const Button *buttons, const size_t button_count, 
 	BeginBatchDraw();
 
 	// 如果贴图没加载成功，则使用纯色背景。
-	if (g_renderTextures.menu_background_ok) {
-		putimage(0, 0, &g_renderTextures.menu_background);
+	if (g_render_textures.menu_background_ok) {
+		putimage(0, 0, &g_render_textures.menu_background);
 	}
 	else {
 		setfillcolor(RGB(10, 20, 60));
@@ -195,40 +193,38 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 
 	BeginBatchDraw();
 
-	if (g_renderTextures.game_background_ok) {
-		putimage(0, 0, &g_renderTextures.game_background);
+	if (g_render_textures.game_background_ok) {
+		putimage(0, 0, &g_render_textures.game_background);
 	}
 	else {
 		setfillcolor(RGB(5, 15, 40));
 		solidrectangle(0, 0, state->width, state->height);
 	}
 
-	if (g_renderTextures.player_ok) {
-		putimage((int)state->player.x, (int)state->player.y, &g_renderTextures.player);
+	if (g_render_textures.player_ok) {
+		putimage(state->player->x, state->player->y, &g_render_textures.player);
 	}
 
-	if (g_renderTextures.enemy_ok) {
-		for (size_t i = 0; i < state->enemy_cnt; ++i) {
-			putimage((int)state->enemies[i].x, (int)state->enemies[i].y, &g_renderTextures.enemy);
+	if (g_render_textures.enemy_ok && state->enemy_list) {
+		for (Node *enemy_node = state->enemy_list->head->next; enemy_node; enemy_node = enemy_node->next) {
+			const Object *enemy = (Object *)enemy_node->data;
+			putimage(enemy->x, enemy->y, &g_render_textures.enemy);
 		}
 	}
 
-	for (size_t i = 0; i < state->bullet_cnt; ++i) {
-		const BulletVisual* b = &state->bullets[i];
-		IMAGE* tex = b->from_player_or_enemy ? &g_renderTextures.player_bullet : &g_renderTextures.enemy_bullet;
-		int ok = b->from_player_or_enemy ? g_renderTextures.player_bullet_ok : g_renderTextures.enemy_bullet_ok;
-
-		if (ok) {
-			putimage((int)b->x, (int)b->y, tex);
+	if (g_render_textures.bullet_ok && state->bullet_list) {
+		for (Node *bullet_node = state->enemy_list->head->next; bullet_node; bullet_node = bullet_node->next) {
+			const Object *bullet = (Object *)bullet_node->data;
+			putimage(bullet->x, bullet->y, &g_render_textures.bullet);
 		}
 	}
 
 	settextstyle(22, 0, L"宋体");
 	settextcolor(RGB(255, 255, 255));
 
-	wchar_t scoreText[64];
-	_snwprintf_s(scoreText, sizeof(scoreText) / sizeof(scoreText[0]), L"SCORE %d", state->score);
-	outtextxy(state->width / 2 - textwidth(scoreText) / 2, state->height - 32, scoreText);
+	wchar_t score_text[64];
+	_snwprintf_s(score_text, sizeof(score_text) / sizeof(score_text[0]), L"SCORE %d", state->score);
+	outtextxy(state->width / 2 - textwidth(score_text) / 2, state->height - 32, score_text);
 
 	if (state->player_dead) {
 		const wchar_t* death_reason = (state->death_reason != NULL) ? state->death_reason : L"";
@@ -251,15 +247,12 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 	FlushBatchDraw();
 }
 
-
-
-
 const wchar_t * resolve_asset_path(const wchar_t *relative_path) {
 	static wchar_t resolved[MAX_PATH * 4];
-	wchar_t modulePath[MAX_PATH];
+	wchar_t module_path[MAX_PATH];
 	wchar_t base[MAX_PATH];
 	wchar_t temp[MAX_PATH * 4];
-	wchar_t *lastSlash;
+	wchar_t *last_slash;
 
 	const wchar_t* parents[] = { L"", L"..\\", L"..\\..\\", L"..\\..\\..\\" };
 
@@ -275,12 +268,12 @@ const wchar_t * resolve_asset_path(const wchar_t *relative_path) {
 		return resolved;
 	}
 
-	GetModuleFileNameW(NULL, modulePath, MAX_PATH);
-	wcscpy_s(base, modulePath);
+	GetModuleFileNameW(NULL, module_path, MAX_PATH);
+	wcscpy_s(base, module_path);
 
-	lastSlash = wcsrchr(base, L'\\');
-	if (lastSlash != NULL) {
-		*(lastSlash + 1) = L'\0';
+	last_slash = wcsrchr(base, L'\\');
+	if (last_slash != NULL) {
+		*(last_slash + 1) = L'\0';
 	}
 
 	for (size_t i = 0; i < sizeof(parents) / sizeof(parents[0]); ++i) {

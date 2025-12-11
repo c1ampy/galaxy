@@ -8,10 +8,12 @@
 
 #pragma once
 #include <windows.h>
-#include <graphics.h>   
-#include <stddef.h>    
-#include <wchar.h>     
-#include <io.h>         
+#include <graphics.h>
+#include <stddef.h>
+#include <wchar.h>
+#include <io.h>
+#include "list.h"
+#include "object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,18 +29,15 @@ typedef struct Button {
 } Button;
 
 typedef struct PlayerVisual {
-	float x;
-	float y;
+	int x, y;
 } PlayerVisual;
 
 typedef struct EnemyVisual {
-	float x;
-	float y;
+	int x, y;
 } EnemyVisual;
 
 typedef struct BulletVisual {
-	float x;
-	float y;
+	int x, y;
 	int from_player_or_enemy; // 子弹来自玩家还是敌人：玩家 = 1，敌人 = 0
 } BulletVisual;
 
@@ -48,11 +47,9 @@ typedef struct GameplayVisualState {
 	int score; // 在底部显示当前分数。
 	int player_dead; // 如果玩家死了，在屏幕上显示 WASTED 并且显示死亡原因。
 	const wchar_t *death_reason;
-	PlayerVisual player;
-	const EnemyVisual *enemies;
-	size_t enemy_cnt;
-	const BulletVisual *bullets;
-	size_t bullet_cnt;
+	Object *player;
+	List *enemy_list;
+	List *bullet_list;
 } GameplayVisualState;
 
 /**
@@ -63,17 +60,15 @@ typedef struct RenderTextures {
 	IMAGE game_background;
 	IMAGE player;
 	IMAGE enemy;
-	IMAGE player_bullet;
-	IMAGE enemy_bullet;
-	int   menu_background_ok;
-	int   game_background_ok;
-	int   player_ok;
-	int   enemy_ok;
-	int   player_bullet_ok;
-	int   enemy_bullet_ok;
+	IMAGE bullet;
+	int menu_background_ok;
+	int game_background_ok;
+	int player_ok;
+	int enemy_ok;
+	int bullet_ok;
 } RenderTextures;
 
-extern RenderTextures g_renderTextures;
+extern RenderTextures g_render_textures;
 
 // 分别负责创建窗口，关闭窗口
 void render_init(const int width, const int height, const wchar_t *title);
@@ -85,8 +80,7 @@ int render_load_gameplay_textures(
 	const wchar_t *menu_background_path,
 	const wchar_t *player_path,
 	const wchar_t *enemy_path,
-	const wchar_t *player_bullet_path,
-	const wchar_t *enemy_bullet_path);
+	const wchar_t *bullet_path);
 
 // 绘制菜单有关函数
 static inline RECT menu_make_rect(const int x, const int y, const int w, const int h);
