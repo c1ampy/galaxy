@@ -151,13 +151,13 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 	const int button_height = 56;
 	const int spacing = 12;
 	const int center_x = (width - button_width) / 2;
-	const int centery = height / 2 - (int)((button_height * button_count + spacing * (button_count - 1)) / 2);
+	const int center_y = height / 2 - (int)((button_height * button_count + spacing * (button_count - 1)) / 2);
 
 	Button buttons[3];
 
 	for (size_t i = 0; i < button_count; ++i) {
 		menu_copy_label(buttons[i].text, sizeof(buttons[i].text) / sizeof(buttons[i].text[0]), labels[i]);
-		buttons[i].rect = menu_make_rect(center_x, centery + (int)i * (button_height + spacing), button_width, button_height);
+		buttons[i].rect = menu_make_rect(center_x, center_y + (int)i * (button_height + spacing), button_width, button_height);
 		buttons[i].hovered = 0;
 	}
 
