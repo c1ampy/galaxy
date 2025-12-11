@@ -112,9 +112,6 @@ void render_draw_current_frame(const GamePlayVisualState *state);
 const wchar_t * resolve_asset_path(const wchar_t *relative_path);
 static inline int load_internal_texture(IMAGE *img, int *flag, const wchar_t *path);
 
-// 在一个编译单元里真正定义纹理实例，其他文件只会引用 extern 声明。
-RenderTextures g_renderTextures = { 0 };
-
 #endif /* RENDER_H */
 
 #ifdef __cplusplus

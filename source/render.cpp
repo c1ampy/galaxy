@@ -14,6 +14,9 @@
 #include <io.h>
 #include "render.h"
 
+// 在一个编译单元里定义纹理实例，其他文件只会使用 extern 声明。
+RenderTextures g_renderTextures = { 0 };
+
 /**
  * @brief 创建 EasyX 窗口
  */
@@ -61,11 +64,11 @@ int render_load_gameplay_textures(
  * @brief 构造一个矩形。
  */
 static inline RECT menu_make_rect(const int x, const int y, const int w, const int h) {
-	return RECT {x, y, x + w, y + h};
+	return RECT { x, y, x + w, y + h };
 }
 
 static inline int menu_hit_test(const Button *item, const int x, const int y) {
-	POINT pt = {x, y};
+	POINT pt = { x, y };
 	return PtInRect(&item->rect, pt);
 }
 
