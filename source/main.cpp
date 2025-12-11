@@ -42,6 +42,16 @@ void enemy_move();
 void bullet_move();
 
 /**
+ * @brief 对所有敌机，判断其是否被子弹击中。
+ */
+void enemy_bullet_collision();
+
+/**
+ * @brief 对所有敌机，判断其是否与玩家碰撞。
+ */
+void enemy_player_collision();
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
 void all_object_update();
@@ -198,6 +208,66 @@ void bullet_move() {
 }
 
 /**
+ * @brief 对所有敌机，判断其是否被子弹击中。
+ */
+void enemy_bullet_collision() {
+	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+		/**
+		 * 创建指针变量 next_enemy_node 原因：
+		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
+		 */
+		Node *next_enemy_node = enemy_node->next;
+		Object *enemy = (Object *)enemy_node->data;
+		
+		for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
+			/**
+			 * 创建指针变量 next_bullet_node 原因：
+			 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
+			 */
+			Node *next_bullet_node = bullet_node->next;
+			Object *bullet = (Object *)bullet_node->data;
+			
+			if (object_collision(enemy, bullet)) {
+				list_random_erase(enemy_list, enemy_node);
+				list_random_erase(bullet_list, bullet_node);
+
+				fprintf(stdout, "A bullet has been erased. (collision with enemy)\n");
+				fprintf(stdout, "An enemy has been erased. (collision with bullet)\n");
+
+				break; // 不再与其他子弹进行碰撞判断。
+			}
+
+			bullet_node = next_bullet_node;
+		}
+
+		enemy_node = next_enemy_node;
+	}
+}
+
+/**
+ * @brief 对所有敌机，判断其是否与玩家碰撞。
+ */
+void enemy_player_collision() {
+	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+		/**
+		 * 创建指针变量 next_enemy_node 原因：
+		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
+		 */
+		Node *next_enemy_node = enemy_node->next;
+		Object *enemy = (Object *)enemy_node->data;
+
+		if (object_collision(enemy, player)) {
+			list_random_erase(enemy_list, enemy_node);
+			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
+
+			// --hp 或结束游戏等
+		}
+		
+		enemy_node = next_enemy_node;
+	}
+}
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
 void all_object_update() {
@@ -236,37 +306,8 @@ void all_object_update() {
 
 	enemy_move();
 	bullet_move();
-
-	// 对于所有敌机，判断其与子弹、玩家是否碰撞。
-	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
-		Node *next_enemy_node = enemy_node->next; // 同上
-		Object *enemy = (Object *)enemy_node->data;
-		
-		for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
-			Node *next_bullet_node = bullet_node->next; // 同上
-			Object *bullet = (Object *)bullet_node->data;
-			
-			if (object_collision(enemy, bullet)) {
-				list_random_erase(enemy_list, enemy_node);
-				list_random_erase(bullet_list, bullet_node);
-
-				fprintf(stdout, "A bullet has been erased. (collision)\n");
-				fprintf(stdout, "A enemy has been erased. (collision)\n");
-
-				enemy = NULL; // 标记当前敌机已被删除。
-				break; // 不再与其他子弹进行碰撞判断。
-			}
-
-			bullet_node = next_bullet_node;
-		}
-
-		// 需要先判断当前敌机是否已被删除。
-		if (enemy && object_collision(enemy, player)) {
-			// --hp 或结束游戏等
-		}
-		
-		enemy_node = next_enemy_node;
-	}
+	enemy_bullet_collision();
+	enemy_player_collision();
 }
 
 /**
