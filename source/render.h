@@ -42,7 +42,7 @@ typedef struct BulletVisual {
 	int from_player_or_enemy; // 子弹来自玩家还是敌人：玩家 = 1，敌人 = 0
 } BulletVisual;
 
-typedef struct GamePlayVisualState {
+typedef struct GameplayVisualState {
 	int width;
 	int height;
 	int score; // 在底部显示当前分数。
@@ -53,7 +53,7 @@ typedef struct GamePlayVisualState {
 	size_t enemy_cnt;
 	const BulletVisual *bullets;
 	size_t bullet_cnt;
-} GamePlayVisualState;
+} GameplayVisualState;
 
 /**
  * @brief 用来存放图片，如果加载图片没成功，也不会崩溃。
@@ -106,7 +106,7 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 /**
  * @brief 渲染游戏画面的主要接口。
  */
-void render_draw_current_frame(const GamePlayVisualState *state);
+void render_draw_current_frame(const GameplayVisualState *state);
 
 // 处理纹理路径有关函数
 const wchar_t * resolve_asset_path(const wchar_t *relative_path);

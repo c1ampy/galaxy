@@ -188,7 +188,7 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 /**
  * @brief 渲染游戏画面的主要接口。
  */
-void render_draw_current_frame(const GamePlayVisualState *state) {
+void render_draw_current_frame(const GameplayVisualState *state) {
 	if (state == NULL) {
 		return;
 	}
