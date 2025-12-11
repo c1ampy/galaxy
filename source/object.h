@@ -15,12 +15,12 @@ extern "C" {
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#define PLAYER_WIDTH 50
-#define PLAYER_HEIGHT 50
-#define ENEMY_WIDTH 40
-#define ENEMY_HEIGHT 40
-#define BULLET_WIDTH 10
-#define BULLET_HEIGHT 20
+#define PLAYER_WIDTH 100
+#define PLAYER_HEIGHT 150
+#define ENEMY_WIDTH 100
+#define ENEMY_HEIGHT 150
+#define BULLET_WIDTH 20
+#define BULLET_HEIGHT 40
 
 typedef enum ObjectType {
 	PLAYER,
