@@ -22,4 +22,4 @@ First demo released!
 
 - 调出 Visual Studio 的「高级保存选项」菜单（详见[这个教程](https://jishuzhan.net/article/1923749980226048002)），将编码设置为「简体中文(GB2312) - 代码页 936」，并将所有源文件与头文件都按这个编码格式保存一遍。
 
-- ctrl + F5 编译运行 `main.cpp` 即可。
+- Ctrl + F5 编译运行 `main.cpp` 即可。
