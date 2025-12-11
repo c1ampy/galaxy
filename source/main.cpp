@@ -3,18 +3,25 @@
 #include <time.h>
 #include <windows.h>
 #include "list.h"
+#include "render.h"
 #include "object.h"
 
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 800
 #define FPS 60
 
-Object *player;
+extern RenderTextures g_renderTextures;
+
+Object *player = NULL;
 List *enemy_list = NULL, *bullet_list = NULL;
+
 double min_fire_gap, min_enemy_spawn_gap; // 单位：秒
 clock_t last_bullet_spawn_time, last_enemy_spawn_time;
+
 int player_speed, enemy_speed, bullet_speed; // 单位：像素每帧
-// 上面的各类 speed 与 gap 参数不设置为常量，因为后续可能推出动态难度系统。
+int score, points_per_hit;
+bool player_dead;
+// 上面的各类参数不设置为常量，因为后续可能推出动态难度系统。
 
 /**
  * @brief 处理玩家移动。
@@ -56,39 +63,76 @@ void enemy_player_collision();
  */
 void all_object_update();
 
-/**
- * @brief 对当前帧，渲染窗口。
- */
-void all_object_render();
-
 int main() {
-	
-	// 各类其他初始化。
+
+	render_init(SCREEN_WIDTH, SCREEN_HEIGHT, L"飞机大战");
+
+	const int high_score = 0; // 后面将加入从文件读取最高分
+
+	int button_id = -1;
+	while (true) {
+		button_id = render_draw_main_menu(SCREEN_WIDTH, SCREEN_HEIGHT, high_score, FPS);
+		if (button_id == 0 || button_id == 2) {
+			break;
+		}
+
+		// 此处加入选项界面
+		// 选好之后直接回到主界面（继续循环）
+	}
+
+	if (button_id == 2) {
+		render_shutdown();
+		fprintf(stdout, "Exited without starting the game.\n");
+		return 0;
+	}
+
+	render_load_gameplay_textures(
+		L"",
+		L"D:\\coding\\galaxy_test\\image\\player.png", 
+		L"D:\\coding\\galaxy_test\\image\\enemy.png", 
+		L"D:\\coding\\galaxy_test\\image\\bullet.png"
+	);
 
 	player = (Object *)malloc(sizeof(Object));
-
-	player->x = 0, player->y = SCREEN_HEIGHT - PLAYER_HEIGHT, player->type = PLAYER; // 位置坐标为测试用值，正式游戏请修改。
+	player->x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2, player->y = SCREEN_HEIGHT - PLAYER_HEIGHT - 100, player->type = PLAYER; // 位置坐标为测试用值，正式游戏请修改。
 	
 	enemy_list = list_init(), bullet_list = list_init();
-	min_enemy_spawn_gap = min_fire_gap = 0.5;
+	min_enemy_spawn_gap = 1;
+	min_fire_gap = 0.5;
 	player_speed = 4, enemy_speed = 3, bullet_speed = 6;
+	points_per_hit = 10;
 	// 开火间隔、敌机生成间隔、速度这里都是乱写的，等待难度系统开发与测试。
 
 	bool running = true;
+	player_dead = false;
 	while (running) {
 		all_object_update();
-		all_object_render();
+		const GameplayVisualState state {
+			SCREEN_WIDTH,
+			SCREEN_HEIGHT,
+			score,
+			player_dead,
+			L"",
+			(const Object *)player,
+			(const List *)enemy_list,
+			(const List *)bullet_list
+		};
+		render_draw_current_frame(&state);
+
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+			// 这里（按下 esc 键后）暂定为直接退出游戏。
 			// 之后可以拓展出一个暂停界面。
-			fprintf(stdout, "Exiting.\n");
 			running = false;
 		}
+		
 		Sleep(1000 / FPS);
 	}
 
 	list_free(enemy_list);
 	list_free(bullet_list);
 	free(player);
+	render_shutdown();
+	fprintf(stdout, "Exited.\n");
 
 	return 0;
 }
@@ -228,6 +272,7 @@ void enemy_bullet_collision() {
 			Object *bullet = (Object *)bullet_node->data;
 			
 			if (object_collision(enemy, bullet)) {
+				score += points_per_hit;
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
 
@@ -260,6 +305,7 @@ void enemy_player_collision() {
 			list_random_erase(enemy_list, enemy_node);
 			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
 
+			player_dead = true;
 			// --hp 或结束游戏等
 		}
 		
@@ -308,11 +354,4 @@ void all_object_update() {
 	bullet_move();
 	enemy_bullet_collision();
 	enemy_player_collision();
-}
-
-/**
- * @brief 对当前帧，渲染窗口。
- */
-void all_object_render() {
-
 }
