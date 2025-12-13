@@ -1,4 +1,4 @@
-/** 
+/**
  * @file main.cpp
  * @brief 飞机大战游戏的主程序。
  * @author 陆营、邓皓轩
@@ -27,13 +27,13 @@ List *enemy_list = NULL, *bullet_list = NULL;
 #define DIFFICULTY_COUNT 3
 
 int difficulty;
-const int starting_hp[DIFFICULTY_COUNT] = { 1, 1, 1 };
+const int starting_hp[DIFFICULTY_COUNT] = { 2, 2, 1 };
 const int delta_hp[DIFFICULTY_COUNT] = { 1, 1, 1 };
-const double min_fire_gap[DIFFICULTY_COUNT] = { 0.5, 0.5, 0.5 }; // 单位：秒
-const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 1, 1, 1 }; // 单位：秒
-const int player_speed[DIFFICULTY_COUNT] = { 4, 4, 4 }; // 单位：像素每帧
-const int enemy_speed[DIFFICULTY_COUNT] = { 3, 3, 3 }; // 单位：像素每帧
-const int bullet_speed[DIFFICULTY_COUNT] = { 6, 6, 6 }; // 单位：像素每帧
+const double min_fire_gap[DIFFICULTY_COUNT] = { 0.4, 0.5, 0.6 }; // 单位：秒
+const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 0.45, 0.35, 0.25 }; // 单位：秒
+const int player_speed[DIFFICULTY_COUNT] = { 8, 12, 12 }; // 单位：像素每帧
+const int enemy_speed[DIFFICULTY_COUNT] = { 6, 9, 9 }; // 单位：像素每帧
+const int bullet_speed[DIFFICULTY_COUNT] = { 12, 18, 18 }; // 单位：像素每帧
 
 clock_t last_bullet_spawn_time, last_enemy_spawn_time;
 
