@@ -9,14 +9,14 @@ typedef enum {
     SOUND_HIT = 2,        //击中音效
     SOUND_POWERUP = 3,    //道具音效
     SOUND_GAMEOVER = 4,   //游戏结束音效
-    SOUND_MENU = 5        //菜单音效
+    SOUND_MENU = 5,        //菜单音效
     SOUND_COUNT           //音效的数目
-}SoundType    
+} SoundType;
 
 //函数声明
 
 //初始化音效系统
-void initSound(void);
+int initSound(void);
 
 //播放指定音效
 void playSound(SoundType sound);
