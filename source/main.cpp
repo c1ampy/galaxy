@@ -1,3 +1,11 @@
+/** 
+ * @file main.cpp
+ * @brief 飞机大战游戏的主程序。
+ * @author 陆营、邓皓轩
+ * @date 2025-12-13
+ * @version v1.0
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
