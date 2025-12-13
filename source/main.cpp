@@ -6,14 +6,15 @@
  * @version v1.0
  */
 
+#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <windows.h>
 #include "list.h"
 #include "object.h"
 #include "render.h"
 #include "control.h"
+#include "high_score_save_load.h"
 
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 800
@@ -23,8 +24,6 @@ extern RenderTextures g_renderTextures;
 
 Object *player = NULL;
 List *enemy_list = NULL, *bullet_list = NULL;
-
-#define DIFFICULTY_COUNT 3
 
 int difficulty;
 const int starting_hp[DIFFICULTY_COUNT] = { 2, 2, 1 };
@@ -108,7 +107,8 @@ int main() {
 
 		if (game_control_data.state == MENU) {
 
-			const int high_score[3] = { 0, 0, 0 }; // 文件读取最高分功能待开发。
+			int high_score[DIFFICULTY_COUNT] = { 0 };
+			high_score_load(high_score);
 			const int choice = render_draw_main_menu(SCREEN_WIDTH, SCREEN_HEIGHT, high_score, difficulty, FPS);
 
 			if (choice == 0) {
@@ -153,6 +153,11 @@ int main() {
 		}
 		else if (game_control_data.state == PAUSED) {
 			
+			int high_score[DIFFICULTY_COUNT] = { 0 };
+			high_score_load(high_score);
+			high_score[difficulty] = game_control_data.score > high_score[difficulty] ? game_control_data.score : high_score[difficulty];
+			high_score_save(high_score);
+
 			const int choice = render_draw_pause_menu(SCREEN_WIDTH, SCREEN_HEIGHT, FPS);
 
 			if (choice == 0) {
@@ -174,6 +179,11 @@ int main() {
 		}
 		else if (game_control_data.state == GAMEOVER) {
 
+			int high_score[DIFFICULTY_COUNT] = { 0 };
+			high_score_load(high_score);
+			high_score[difficulty] = game_control_data.score > high_score[difficulty] ? game_control_data.score : high_score[difficulty];
+			high_score_save(high_score);
+
 			object_free();
 			const GameplayVisualState state {
 				SCREEN_WIDTH,
@@ -188,7 +198,6 @@ int main() {
 				starting_hp[difficulty]
 			};
 
-			const int high_score[3] = { 0, 0, 0 };
 			const int choice = render_draw_wasted_page(&state, high_score, FPS);
 			
 			if (choice == 0) {

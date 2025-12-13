@@ -116,7 +116,7 @@ static inline void menu_draw_button(const Button *button) {
 	drawtext(button->text, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
 
-static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_scores[3], const int difficulty) {
+static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_score[3], const int difficulty) {
 	wchar_t line_easy[64];
 	wchar_t line_normal[64];
 	wchar_t line_hard[64];
@@ -145,9 +145,9 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
 
 	settextstyle(20, 0, L"宋体");
 	settextcolor(RGB(200, 200, 200));
-	_snwprintf_s(line_easy, _countof(line_easy), L"简单模式最高分：%d", high_scores[0]);
-	_snwprintf_s(line_normal, _countof(line_normal), L"普通模式最高分：%d", high_scores[1]);
-	_snwprintf_s(line_hard, _countof(line_hard), L"困难模式最高分：%d", high_scores[2]);
+	_snwprintf_s(line_easy, _countof(line_easy), L"简单模式最高分：%d", high_score[0]);
+	_snwprintf_s(line_normal, _countof(line_normal), L"普通模式最高分：%d", high_score[1]);
+	_snwprintf_s(line_hard, _countof(line_hard), L"困难模式最高分：%d", high_score[2]);
 
 	const int base_y = height / 4 + 16;
 	const int spacing = 28;
@@ -170,7 +170,7 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
  * @brief 渲染主菜单的主要接口。
  * @returns 返回被按下的按钮的 id：0 = 开始游戏，1 = 选项，2 = 退出
  */
-int render_draw_main_menu(const int width, const int height, const int high_scores[3], const int difficulty, const int fps) {
+int render_draw_main_menu(const int width, const int height, const int high_score[3], const int difficulty, const int fps) {
 	const wchar_t* labels[] = { L"开始游戏", L"选择难度", L"退出" };
 	const size_t button_count = _countof(labels);
 	const int button_width = 240;
@@ -203,7 +203,7 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 			}
 		}
 
-		menu_render_frame(buttons, button_count, width, height, high_scores, difficulty);
+		menu_render_frame(buttons, button_count, width, height, high_score, difficulty);
 		Sleep(1000 / fps);
 	}
 }
@@ -387,7 +387,7 @@ int render_draw_pause_menu(const int width, const int height, const int fps) {
  * @brief 渲染 WASTED 页面。
  * @return 0 = 重新开始，1 = 返回主菜单，2 = 退出游戏。
  */
-int render_draw_wasted_page(const GameplayVisualState *state, const int high_scores[3], const int fps) {
+int render_draw_wasted_page(const GameplayVisualState *state, const int high_score[3], const int fps) {
 	if (state == NULL) {
 		return 2;
 	}
@@ -446,7 +446,7 @@ int render_draw_wasted_page(const GameplayVisualState *state, const int high_sco
 
 		wchar_t high_buf[128];
 		_snwprintf_s(high_buf, _countof(high_buf), L"最高分（%ls）：%d",
-			difficulty_to_text(state->difficulty), high_scores[state->difficulty]);
+			difficulty_to_text(state->difficulty), high_score[state->difficulty]);
 		outtextxy(state->width / 2 - textwidth(high_buf) / 2, state->height / 2 + 30, high_buf);
 
 		for (size_t i = 0; i < button_count; ++i) {

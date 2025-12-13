@@ -81,7 +81,7 @@ static inline RECT menu_make_rect(const int x, const int y, const int w, const i
 static inline int menu_hit_test(const Button *item, const int x, const int y);
 static inline void menu_copy_label(wchar_t *dst, size_t cap, const wchar_t *src);
 static inline void menu_draw_button(const Button *button);
-static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_scores[3], const int difficulty);
+static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_score[3], const int difficulty);
 
 // 渲染菜单和游戏画面的接口
 
@@ -89,7 +89,7 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
  * @brief 渲染主菜单。
  * @return 0 = 开始游戏，1 = 选择难度，2 = 退出。
  */
-int render_draw_main_menu(const int width, const int height, const int high_scores[3], const int difficulty, const int fps);
+int render_draw_main_menu(const int width, const int height, const int high_score[3], const int difficulty, const int fps);
 
 /**
  * @brief 渲染难度选择界面。
@@ -112,7 +112,7 @@ int render_draw_pause_menu(const int width, const int height, const int fps);
  * @brief 渲染 WASTED 页面。
  * @return 0 = 重新开始，1 = 返回主菜单，2 = 退出游戏。
  */
-int render_draw_wasted_page(const GameplayVisualState *state, const int high_scores[3], const int fps);
+int render_draw_wasted_page(const GameplayVisualState *state, const int high_score[3], const int fps);
 
 // 处理纹理路径有关函数
 const wchar_t * resolve_asset_path(const wchar_t *relative_path);
