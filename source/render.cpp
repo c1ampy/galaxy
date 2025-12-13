@@ -137,11 +137,11 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
 	const wchar_t *title = L"飞机大战";
 	outtextxy(width / 2 - textwidth(title) / 2, height / 4 - 40, title);
 
+	// 将「当前难度 + 三行最高分」移动到底部并居中显示
 	settextstyle(18, 0, L"宋体");
 	settextcolor(RGB(200, 200, 160));
 	wchar_t diff_buf[64];
 	_snwprintf_s(diff_buf, _countof(diff_buf), L"当前难度：%ls", difficulty_to_text(difficulty));
-	outtextxy(width / 2 - textwidth(diff_buf) / 2, height / 4 - 8, diff_buf);
 
 	settextstyle(20, 0, L"宋体");
 	settextcolor(RGB(200, 200, 200));
@@ -149,11 +149,22 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
 	_snwprintf_s(line_normal, _countof(line_normal), L"普通模式最高分：%d", high_score[1]);
 	_snwprintf_s(line_hard, _countof(line_hard), L"困难模式最高分：%d", high_score[2]);
 
-	const int base_y = height / 4 + 16;
-	const int spacing = 28;
-	outtextxy(width / 2 - textwidth(line_easy) / 2, base_y, line_easy);
-	outtextxy(width / 2 - textwidth(line_normal) / 2, base_y + spacing, line_normal);
-	outtextxy(width / 2 - textwidth(line_hard) / 2, base_y + spacing * 2, line_hard);
+	// 计算底部起始 y，四行逐行向上排列并居中（水平以文本宽度居中）
+	const int footer_lines = 4;
+	const int footer_spacing = 28; // 行间距，可根据视觉调整
+	const int bottom_margin = 24; // 离窗口底部的外边距
+	const int start_y = height - bottom_margin - footer_spacing * (footer_lines - 1);
+
+	// 先绘制难度（使用 18 号字体），再绘制三行分数（20 号字体）
+	settextstyle(18, 0, L"宋体");
+	settextcolor(RGB(200, 200, 160));
+	outtextxy(width / 2 - textwidth(diff_buf) / 2, start_y, diff_buf);
+
+	settextstyle(20, 0, L"宋体");
+	settextcolor(RGB(200, 200, 200));
+	outtextxy(width / 2 - textwidth(line_easy) / 2, start_y + footer_spacing * 1, line_easy);
+	outtextxy(width / 2 - textwidth(line_normal) / 2, start_y + footer_spacing * 2, line_normal);
+	outtextxy(width / 2 - textwidth(line_hard) / 2, start_y + footer_spacing * 3, line_hard);
 
 	for (size_t i = 0; i < button_count; ++i) {
 		menu_draw_button(&buttons[i]);
@@ -161,7 +172,7 @@ static void menu_render_frame(const Button* buttons, const size_t button_count, 
 
 	settextstyle(16, 0, L"宋体");
 	settextcolor(RGB(180, 180, 180));
-	outtextxy(10, height - 36, L"鼠标悬停选择，左键点击确认");
+	outtextxy(10, 36, L"鼠标悬停选择，左键点击确认");
 
 	FlushBatchDraw();
 }
@@ -208,6 +219,10 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 	}
 }
 
+/**
+ * @brief 渲染难度选择界面。
+ * @return 返回选择的难度。
+ */
 int render_draw_difficulty_menu(const int width, const int height, const int difficulty, const int fps) {
 	const wchar_t *labels[] = { L"简单", L"普通", L"困难" };
 	const size_t button_count = _countof(labels);
@@ -422,15 +437,26 @@ int render_draw_wasted_page(const GameplayVisualState *state, const int high_sco
 					}
 				}
 			}
-			else if (msg.message == WM_KEYDOWN) {
-				return 1; // 任意键返回主菜单
-			}
 		}
 
 		BeginBatchDraw();
 		setfillcolor(RGB(60, 60, 60));
 		solidrectangle(0, 0, state->width, state->height);
 
+		
+		wchar_t score_buf[128];
+		_snwprintf_s(score_buf, _countof(score_buf), L"本次分数：%d", state->score);
+		settextstyle(24, 0, L"宋体");
+		settextcolor(RGB(220, 220, 220));
+		outtextxy(state->width / 2 - textwidth(score_buf) / 2, 12, score_buf);
+
+		wchar_t high_buf[128];
+		_snwprintf_s(high_buf, _countof(high_buf), L"最高分（%ls）：%d", difficulty_to_text(state->difficulty), high_score[state->difficulty]);
+		settextstyle(18, 0, L"宋体");
+		settextcolor(RGB(200, 200, 200));
+		outtextxy(state->width / 2 - textwidth(high_buf) / 2, 12 + 30, high_buf);
+
+		// 主标题 WASTED 保持在中间偏上显示
 		settextstyle(72, 0, L"Impact");
 		settextcolor(RGB(220, 220, 220));
 		outtextxy(state->width / 2 - textwidth(L"WASTED") / 2, state->height / 2 - 160, L"WASTED");
@@ -440,22 +466,10 @@ int render_draw_wasted_page(const GameplayVisualState *state, const int high_sco
 		outtextxy(state->width / 2 - textwidth(reason) / 2, state->height / 2 - 60, reason);
 
 		settextstyle(24, 0, L"宋体");
-		wchar_t score_buf[128];
-		_snwprintf_s(score_buf, _countof(score_buf), L"本次分数：%d", state->score);
-		outtextxy(state->width / 2 - textwidth(score_buf) / 2, state->height / 2 - 10, score_buf);
-
-		wchar_t high_buf[128];
-		_snwprintf_s(high_buf, _countof(high_buf), L"最高分（%ls）：%d",
-			difficulty_to_text(state->difficulty), high_score[state->difficulty]);
-		outtextxy(state->width / 2 - textwidth(high_buf) / 2, state->height / 2 + 30, high_buf);
-
+		
 		for (size_t i = 0; i < button_count; ++i) {
 			menu_draw_button(&buttons[i]);
 		}
-
-		settextstyle(20, 0, L"宋体");
-		const wchar_t* prompt = L"按任意键返回主菜单...";
-		outtextxy(state->width / 2 - textwidth(prompt) / 2, state->height - 60, prompt);
 
 		FlushBatchDraw();
 		Sleep(1000 / fps);

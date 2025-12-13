@@ -93,7 +93,7 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
 
 /**
  * @brief 渲染难度选择界面。
- * @return 返回选择的难度，取消则返回当前难度。
+ * @return 返回选择的难度。
  */
 int render_draw_difficulty_menu(const int width, const int height, const int difficulty, const int fps);
 
