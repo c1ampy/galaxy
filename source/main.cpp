@@ -19,6 +19,8 @@ List *enemy_list = NULL, *bullet_list = NULL;
 #define DIFFICULTY_COUNT 3
 
 int difficulty;
+const int starting_hp[DIFFICULTY_COUNT] = { 1, 1, 1 };
+const int delta_hp[DIFFICULTY_COUNT] = { 1, 1, 1 };
 const double min_fire_gap[DIFFICULTY_COUNT] = { 0.5, 0.5, 0.5 }; // 单位：秒
 const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 1, 1, 1 }; // 单位：秒
 const int player_speed[DIFFICULTY_COUNT] = { 4, 4, 4 }; // 单位：像素每帧
@@ -30,16 +32,6 @@ clock_t last_bullet_spawn_time, last_enemy_spawn_time;
 #define POINTS_PER_HIT 10
 
 GameControlData game_control_data;
-
-/**
- * @brief 初始化游戏对象。
- */
-void object_init();
-
-/**
- * @brief 释放游戏对象的内存。
- */
-void object_free();
 
 /**
  * @brief 处理玩家移动。
@@ -77,9 +69,19 @@ void enemy_bullet_collision();
 void enemy_player_collision();
 
 /**
+ * @brief 初始化游戏对象。
+ */
+void object_init();
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
-void all_object_update();
+void object_update();
+
+/**
+ * @brief 释放游戏对象的内存。
+ */
+void object_free();
 
 int main() {
 
@@ -95,47 +97,132 @@ int main() {
 	game_control_data.running = true;
 	game_control_to_menu(&game_control_data);
 	while (game_control_data.running) {
-		switch (game_control_data.state) {
-		case MENU:
-			const int high_score = 0; // 等待加入文件读取最高分。
+
+		if (game_control_data.state == MENU) {
+
+			const int high_score = 0; // 文件读取最高分功能待开发。
 			const int button_id = render_draw_main_menu(SCREEN_WIDTH, SCREEN_HEIGHT, high_score, FPS);
 
-			switch (button_id) {
-			case 0:
-				game_control_start(&game_control_data, 1);
+			if (button_id == 0) {
+				object_init();
+				game_control_start(&game_control_data, starting_hp[difficulty]);
+			}
+			if (button_id == 1) {
+				game_control_to_settings(&game_control_data);
+			}
+			if (button_id == 2) {
+				game_control_data.running = false;
 			}
 		}
+		else if (game_control_data.state == SETTINGS) {
+
+			// 图形界面待开发。
+
+			while (true) {
+				if (GetAsyncKeyState('A') & 0x8000) {
+					difficulty = 0;
+					break;
+				}
+				if (GetAsyncKeyState('S') & 0x8000) {
+					difficulty = 1;
+					break;
+				}
+				if (GetAsyncKeyState('D') & 0x8000) {
+					difficulty = 2;
+					break;
+				}
+
+				Sleep(1000 / FPS);
+			}
+
+			fprintf(stdout, "Difficulty set to %d.\n", difficulty);
+
+			game_control_to_menu(&game_control_data);
+		}
+		else if (game_control_data.state == PLAYING) {
+
+			object_update();
+			const GameplayVisualState state{
+				SCREEN_WIDTH,
+				SCREEN_HEIGHT,
+				game_control_data.score,
+				false,
+				L"",
+				(const Object *)player,
+				(const List *)enemy_list,
+				(const List *)bullet_list
+			};
+			render_draw_current_frame(&state);
+
+			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+				game_control_pause(&game_control_data);
+			}
+		}
+		else if (game_control_data.state == PAUSED) {
+
+			// 图形界面待开发。
+
+			while (true) {
+				if (GetAsyncKeyState('R') & 0x8000) {
+					game_control_resume(&game_control_data);
+					break;
+				}
+				if (GetAsyncKeyState('M') & 0x8000) {
+					object_free();
+					game_control_to_menu(&game_control_data);
+					break;
+				}
+				if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+					object_free();
+					game_control_data.running = false;
+					break;
+				}
+
+				Sleep(1000 / FPS);
+			}
+		}
+		else if (game_control_data.state == GAMEOVER) {
+
+			object_free();
+			const GameplayVisualState state {
+				SCREEN_WIDTH,
+				SCREEN_HEIGHT,
+				game_control_data.score,
+				true,
+				L"",
+				(const Object *)player,
+				(const List *)enemy_list,
+				(const List *)bullet_list
+			};
+			render_draw_current_frame(&state);
+			
+			while (true) {
+				if (GetAsyncKeyState('R') & 0x8000) {
+					object_init();
+					game_control_start(&game_control_data, starting_hp[difficulty]);
+					break;
+				}
+				if (GetAsyncKeyState('M') & 0x8000) {
+					game_control_to_menu(&game_control_data);
+					break;
+				}
+				if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+					game_control_data.running = false;
+					break;
+				}
+
+				Sleep(1000 / FPS);
+			}
+		}
+
 		Sleep(1000 / FPS);
 	}
 
+	window_close();
+
+	fprintf(stdout, "Exited.\n");
+
 	return 0;
-}
-
-/**
- * @brief 初始化游戏对象。
- */
-void object_init() {
-	player = (Object *)malloc(sizeof(Object));
-	if (!player) {
-		fprintf(stderr, "malloc() failed.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	player->x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2;
-	player->y = SCREEN_HEIGHT - PLAYER_HEIGHT - 100;
-	player->type = PLAYER;
-
-	enemy_list = list_init();
-	bullet_list = list_init();
-}
-
-/**
- * @brief 释放游戏对象的内存。
- */
-void object_free() {
-	list_free(enemy_list);
-	list_free(bullet_list);
-	free(player);
 }
 
 /**
@@ -181,7 +268,7 @@ void player_fire() {
 	}
 
 	new_bullet->x = player->x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2;
-	new_bullet->y = player->y - BULLET_HEIGHT;
+	new_bullet->y = player->y;
 	new_bullet->type = BULLET;
 
 	list_append(bullet_list, new_bullet);
@@ -273,13 +360,13 @@ void enemy_bullet_collision() {
 			Object *bullet = (Object *)bullet_node->data;
 
 			if (object_collision(enemy, bullet)) {
-				game_control_add_score(&game_control_data, POINTS_PER_HIT);
-
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
 
 				fprintf(stdout, "A bullet has been erased. (collision with enemy)\n");
 				fprintf(stdout, "An enemy has been erased. (collision with bullet)\n");
+
+				game_control_add_score(&game_control_data, POINTS_PER_HIT);
 
 				break; // 不再与其他子弹进行碰撞判断。
 			}
@@ -304,11 +391,11 @@ void enemy_player_collision() {
 		Object *enemy = (Object *)enemy_node->data;
 
 		if (object_collision(enemy, player)) {
-			game_control_reduce_hp(&game_control_data, 1);
-
 			list_random_erase(enemy_list, enemy_node);
-			
+
 			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
+			
+			game_control_reduce_hp(&game_control_data, delta_hp[difficulty]);
 		}
 
 		enemy_node = next_enemy_node;
@@ -316,9 +403,29 @@ void enemy_player_collision() {
 }
 
 /**
+ * @brief 初始化游戏对象。
+ */
+void object_init() {
+	player = (Object *)malloc(sizeof(Object));
+	if (!player) {
+		fprintf(stderr, "malloc() failed.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	player->x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2;
+	player->y = SCREEN_HEIGHT - PLAYER_HEIGHT - 100;
+	player->type = PLAYER;
+
+	enemy_list = list_init();
+	bullet_list = list_init();
+
+	last_bullet_spawn_time = last_enemy_spawn_time = clock();
+}
+
+/**
  * @brief 对当前帧，处理所有游戏对象的移动、添加、删除等操作。
  */
-void all_object_update() {
+void object_update() {
 
 	player_move();
 
@@ -334,10 +441,6 @@ void all_object_update() {
 
 			fprintf(stdout, "A bullet has been fired.\n");
 			// 给出开火成功成功的反馈，如音效等。
-		}
-		else {
-			fprintf(stdout, "Firing event has been denied. (not enough gap)\n");
-			// 给出开火失败的反馈，如音效等。
 		}
 	}
 
@@ -356,4 +459,18 @@ void all_object_update() {
 	bullet_move();
 	enemy_bullet_collision();
 	enemy_player_collision();
+}
+
+/**
+ * @brief 释放游戏对象的内存。
+ */
+void object_free() {
+	list_free(enemy_list);
+	list_free(bullet_list);
+	enemy_list = bullet_list = NULL;
+
+	if (player) {
+		free(player);
+	}
+	player = NULL;
 }

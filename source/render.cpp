@@ -201,10 +201,6 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 		solidrectangle(0, 0, state->width, state->height);
 	}
 
-	if (g_render_textures.player_ok && state->player) {
-		putimage(state->player->x, state->player->y, &g_render_textures.player);
-	}
-
 	if (g_render_textures.enemy_ok && state->enemy_list) {
 		for (Node *enemy_node = state->enemy_list->head->next; enemy_node; enemy_node = enemy_node->next) {
 			const Object *enemy = (Object *)enemy_node->data;
@@ -217,6 +213,10 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 			const Object *bullet = (Object *)bullet_node->data;
 			putimage(bullet->x, bullet->y, &g_render_textures.bullet);
 		}
+	}
+
+	if (g_render_textures.player_ok && state->player) {
+		putimage(state->player->x, state->player->y, &g_render_textures.player);
 	}
 
 	settextstyle(22, 0, L"宋体");
