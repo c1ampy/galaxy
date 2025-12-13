@@ -96,6 +96,12 @@ int render_draw_main_menu(const int width, const int height, const int high_scor
  */
 void render_draw_current_frame(const GameplayVisualState *state);
 
+/**
+ * @brief WASTED 页面。
+ * @return 0 = 重新开始，1 = 返回主菜单，2 = 退出游戏。
+ */
+int render_draw_wasted_page(const GameplayVisualState *state, const int high_scores[3], const int fps);
+
 // 处理纹理路径有关函数
 const wchar_t * resolve_asset_path(const wchar_t *relative_path);
 static inline int load_internal_texture(IMAGE *img, int *flag, const wchar_t *path);

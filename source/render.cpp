@@ -226,10 +226,6 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 		solidrectangle(0, 0, state->width, state->height);
 	}
 
-	if (g_render_textures.player_ok && state->player) {
-		putimage(state->player->x, state->player->y, &g_render_textures.player);
-	}
-
 	if (g_render_textures.enemy_ok && state->enemy_list) {
 		for (Node *enemy_node = state->enemy_list->head->next; enemy_node; enemy_node = enemy_node->next) {
 			const Object *enemy = (Object *)enemy_node->data;
@@ -242,6 +238,10 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 			const Object *bullet = (Object *)bullet_node->data;
 			putimage(bullet->x, bullet->y, &g_render_textures.bullet);
 		}
+	}
+
+	if (g_render_textures.player_ok && state->player) {
+		putimage(state->player->x, state->player->y, &g_render_textures.player);
 	}
 
 	settextstyle(22, 0, L"宋体");
@@ -260,6 +260,87 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 	outtextxy(12, 36, hp_text);
 
 	FlushBatchDraw();
+}
+
+/**
+ * @brief WASTED 页面。
+ * @return 0 = 重新开始，1 = 返回主菜单，2 = 退出游戏。
+ */
+int render_draw_wasted_page(const GameplayVisualState *state, const int high_scores[3], const int fps) {
+	if (state == NULL) {
+		return 2;
+	}
+
+	const wchar_t *labels[] = { L"重新开始游戏", L"返回主菜单", L"退出游戏" };
+	const size_t button_count = _countof(labels);
+	const int button_width = 320;
+	const int button_height = 56;
+	const int spacing = 12;
+	const int center_x = (state->width - button_width) / 2;
+	const int center_y = state->height / 2 + 40;
+
+	Button buttons[3] = { 0 };
+	for (size_t i = 0; i < button_count; ++i) {
+		menu_copy_label(buttons[i].text, _countof(buttons[i].text), labels[i]);
+		buttons[i].rect = menu_make_rect(center_x, center_y + (int)i * (button_height + spacing), button_width, button_height);
+		buttons[i].hovered = 0;
+	}
+
+	while (true) {
+		ExMessage msg;
+		while (peekmessage(&msg, EM_MOUSE, TRUE)) {
+			if (msg.message == WM_MOUSEMOVE) {
+				for (size_t i = 0; i < button_count; ++i) {
+					buttons[i].hovered = menu_hit_test(&buttons[i], msg.x, msg.y);
+				}
+			}
+			else if (msg.message == WM_LBUTTONDOWN) {
+				for (size_t i = 0; i < button_count; ++i) {
+					if (menu_hit_test(&buttons[i], msg.x, msg.y)) {
+						return (int)i;
+					}
+				}
+			}
+			else if (msg.message == WM_KEYDOWN) {
+				return 1; // 任意键返回主菜单
+			}
+		}
+
+		BeginBatchDraw();
+		setfillcolor(RGB(60, 60, 60));
+		solidrectangle(0, 0, state->width, state->height);
+
+		settextstyle(72, 0, L"Impact");
+		settextcolor(RGB(220, 220, 220));
+		outtextxy(state->width / 2 - textwidth(L"WASTED") / 2, state->height / 2 - 160, L"WASTED");
+
+		settextstyle(28, 0, L"宋体");
+		const wchar_t* reason = state->death_reason != NULL ? state->death_reason : L"";
+		outtextxy(state->width / 2 - textwidth(reason) / 2, state->height / 2 - 60, reason);
+
+		settextstyle(24, 0, L"宋体");
+		wchar_t score_buf[128];
+		_snwprintf_s(score_buf, _countof(score_buf), L"本次分数：%d", state->score);
+		outtextxy(state->width / 2 - textwidth(score_buf) / 2, state->height / 2 - 10, score_buf);
+
+		wchar_t high_buf[128];
+		_snwprintf_s(high_buf, _countof(high_buf), L"最高分（%ls）：%d",
+			difficulty_to_text(state->difficulty), high_scores[state->difficulty]);
+		outtextxy(state->width / 2 - textwidth(high_buf) / 2, state->height / 2 + 30, high_buf);
+
+		for (size_t i = 0; i < button_count; ++i) {
+			menu_draw_button(&buttons[i]);
+		}
+
+		settextstyle(20, 0, L"宋体");
+		const wchar_t* prompt = L"按任意键返回主菜单...";
+		outtextxy(state->width / 2 - textwidth(prompt) / 2, state->height - 60, prompt);
+
+		FlushBatchDraw();
+		Sleep(1000 / fps);
+	}
+
+	return 1;
 }
 
 const wchar_t * resolve_asset_path(const wchar_t *relative_path) {
