@@ -93,7 +93,7 @@ int main() {
 	);
 
 	game_control_data.running = true;
-	game_to_menu(&game_control_data);
+	game_control_to_menu(&game_control_data);
 	while (game_control_data.running) {
 		switch (game_control_data.state) {
 		case MENU:
@@ -102,7 +102,7 @@ int main() {
 
 			switch (button_id) {
 			case 0:
-				game_start(&game_control_data, 1);
+				game_control_start(&game_control_data, 1);
 			}
 		}
 		Sleep(1000 / FPS);
@@ -273,7 +273,7 @@ void enemy_bullet_collision() {
 			Object *bullet = (Object *)bullet_node->data;
 
 			if (object_collision(enemy, bullet)) {
-				add_score(&game_control_data, POINTS_PER_HIT);
+				game_control_add_score(&game_control_data, POINTS_PER_HIT);
 
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
@@ -304,7 +304,7 @@ void enemy_player_collision() {
 		Object *enemy = (Object *)enemy_node->data;
 
 		if (object_collision(enemy, player)) {
-			reduce_hp(&game_control_data, 1);
+			game_control_reduce_hp(&game_control_data, 1);
 
 			list_random_erase(enemy_list, enemy_node);
 			

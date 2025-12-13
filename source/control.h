@@ -38,14 +38,14 @@ typedef struct {
 
 // 有关游戏状态控制的一系列函数。
 
-void game_to_menu(GameControlData *game_control_data);
-void game_to_settings(GameControlData *game_control_data);
-void game_start(GameControlData *game_control_data, const int starting_hp);
-void game_pause(GameControlData *game_control_data);
-void game_resume(GameControlData *game_control_data);
-void game_over(GameControlData *game_control_data);
-void add_score(GameControlData *game_control_data, const int points);
-void reduce_hp(GameControlData *game_control_data, const int delta);
+void game_control_to_menu(GameControlData *game_control_data);
+void game_control_to_settings(GameControlData *game_control_data);
+void game_control_start(GameControlData *game_control_data, const int starting_hp);
+void game_control_pause(GameControlData *game_control_data);
+void game_control_resume(GameControlData *game_control_data);
+void game_control_end(GameControlData *game_control_data);
+void game_control_add_score(GameControlData *game_control_data, const int points);
+void game_control_reduce_hp(GameControlData *game_control_data, const int delta);
 
 #endif /* CONTROL_H */
 
