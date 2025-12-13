@@ -201,7 +201,7 @@ void render_draw_current_frame(const GameplayVisualState *state) {
 		solidrectangle(0, 0, state->width, state->height);
 	}
 
-	if (g_render_textures.player_ok) {
+	if (g_render_textures.player_ok && state->player) {
 		putimage(state->player->x, state->player->y, &g_render_textures.player);
 	}
 
