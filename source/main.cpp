@@ -3,8 +3,9 @@
 #include <time.h>
 #include <windows.h>
 #include "list.h"
-#include "render.h"
 #include "object.h"
+#include "render.h"
+#include "control.h"
 
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 800
@@ -15,13 +16,20 @@ extern RenderTextures g_renderTextures;
 Object *player = NULL;
 List *enemy_list = NULL, *bullet_list = NULL;
 
-double min_fire_gap, min_enemy_spawn_gap; // 单位：秒
+#define DIFFICULTY_COUNT 3
+
+int difficulty;
+const double min_fire_gap[DIFFICULTY_COUNT] = { 0.5, 0.5, 0.5 }; // 单位：秒
+const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 1, 1, 1 }; // 单位：秒
+const int player_speed[DIFFICULTY_COUNT] = { 4, 4, 4 }; // 单位：像素每帧
+const int enemy_speed[DIFFICULTY_COUNT] = { 3, 3, 3 }; // 单位：像素每帧
+const int bullet_speed[DIFFICULTY_COUNT] = { 6, 6, 6 }; // 单位：像素每帧
+
 clock_t last_bullet_spawn_time, last_enemy_spawn_time;
 
-int player_speed, enemy_speed, bullet_speed; // 单位：像素每帧
-int score, points_per_hit;
-bool player_dead;
-// 上面的各类参数不设置为常量，因为后续可能推出动态难度系统。
+#define POINTS_PER_HIT 10
+
+GameControlData game_control_data;
 
 /**
  * @brief 初始化游戏对象。
@@ -98,49 +106,38 @@ int main() {
 
 	render_load_gameplay_textures(
 		L"",
-		L"D:\\coding\\galaxy_test\\image\\player.png", 
-		L"D:\\coding\\galaxy_test\\image\\enemy.png", 
+		L"D:\\coding\\galaxy_test\\image\\player.png",
+		L"D:\\coding\\galaxy_test\\image\\enemy.png",
 		L"D:\\coding\\galaxy_test\\image\\bullet.png"
 	);
 
-	player = (Object *)malloc(sizeof(Object));
-	player->x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2, player->y = SCREEN_HEIGHT - PLAYER_HEIGHT - 100, player->type = PLAYER; // 位置坐标为测试用值，正式游戏请修改。
-	
-	enemy_list = list_init(), bullet_list = list_init();
-	min_enemy_spawn_gap = 1;
-	min_fire_gap = 0.5;
-	player_speed = 4, enemy_speed = 3, bullet_speed = 6;
-	points_per_hit = 10;
-	// 开火间隔、敌机生成间隔、速度这里都是乱写的，等待难度系统开发与测试。
-
-	bool running = true;
-	player_dead = false;
-	while (running) {
+	game_init(&game_control_data);
+	object_init();
+	game_start(&game_control_data, 1);
+	while (game_control_data.running) {
 		all_object_update();
-		const GameplayVisualState state {
+		const GameplayVisualState state{
 			SCREEN_WIDTH,
 			SCREEN_HEIGHT,
-			score,
-			player_dead,
+			game_control_data.score,
+			game_control_data.state == GAMEOVER,
 			L"",
-			(const Object *)player,
-			(const List *)enemy_list,
-			(const List *)bullet_list
+			(const Object*)player,
+			(const List*)enemy_list,
+			(const List*)bullet_list
 		};
 		render_draw_current_frame(&state);
 
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
 			// 这里（按下 esc 键后）暂定为直接退出游戏。
 			// 之后可以拓展出一个暂停界面。
-			running = false;
+			game_control_data.running = false;
 		}
 		
 		Sleep(1000 / FPS);
 	}
 
-	list_free(enemy_list);
-	list_free(bullet_list);
-	free(player);
+	object_free();
 	render_shutdown();
 	fprintf(stdout, "Exited.\n");
 
@@ -151,7 +148,12 @@ int main() {
  * @brief 初始化游戏对象。
  */
 void object_init() {
-	player = (Object*)malloc(sizeof(Object));
+	player = (Object *)malloc(sizeof(Object));
+	if (!player) {
+		fprintf(stderr, "malloc() failed.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	player->x = SCREEN_WIDTH / 2 - PLAYER_WIDTH / 2;
 	player->y = SCREEN_HEIGHT - PLAYER_HEIGHT - 100;
 	player->type = PLAYER;
@@ -174,16 +176,16 @@ void object_free() {
  */
 void player_move() {
 	if (GetAsyncKeyState('W') & 0x8000 || GetAsyncKeyState(VK_UP) & 0x8000) {
-		player->y -= player_speed;
+		player->y -= player_speed[difficulty];
 	}
 	if (GetAsyncKeyState('S') & 0x8000 || GetAsyncKeyState(VK_DOWN) & 0x8000) {
-		player->y += player_speed;
+		player->y += player_speed[difficulty];
 	}
 	if (GetAsyncKeyState('A') & 0x8000 || GetAsyncKeyState(VK_LEFT) & 0x8000) {
-		player->x -= player_speed;
+		player->x -= player_speed[difficulty];
 	}
 	if (GetAsyncKeyState('D') & 0x8000 || GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-		player->x += player_speed;
+		player->x += player_speed[difficulty];
 	}
 
 	// 超出边界时拉回
@@ -249,7 +251,7 @@ void enemy_move() {
 		Node *next_enemy_node = enemy_node->next;
 		Object *enemy = (Object *)enemy_node->data;
 
-		enemy->y += enemy_speed;
+		enemy->y += enemy_speed[difficulty];
 		if (enemy->y > SCREEN_HEIGHT) {
 			list_random_erase(enemy_list, enemy_node);
 
@@ -272,7 +274,7 @@ void bullet_move() {
 		Node *next_bullet_node = bullet_node->next;
 		Object *bullet = (Object *)bullet_node->data;
 
-		bullet->y -= bullet_speed;
+		bullet->y -= bullet_speed[difficulty];
 		if (bullet->y < -BULLET_HEIGHT) {
 			list_random_erase(bullet_list, bullet_node);
 
@@ -294,7 +296,7 @@ void enemy_bullet_collision() {
 		 */
 		Node *next_enemy_node = enemy_node->next;
 		Object *enemy = (Object *)enemy_node->data;
-		
+
 		for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
 			/**
 			 * 创建指针变量 next_bullet_node 原因：
@@ -304,7 +306,8 @@ void enemy_bullet_collision() {
 			Object *bullet = (Object *)bullet_node->data;
 			
 			if (object_collision(enemy, bullet)) {
-				score += points_per_hit;
+				add_score(&game_control_data, POINTS_PER_HIT);
+
 				list_random_erase(enemy_list, enemy_node);
 				list_random_erase(bullet_list, bullet_node);
 
@@ -337,10 +340,9 @@ void enemy_player_collision() {
 			list_random_erase(enemy_list, enemy_node);
 			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
 
-			player_dead = true;
-			// --hp 或结束游戏等
+			reduce_hp(&game_control_data, 1);
 		}
-		
+
 		enemy_node = next_enemy_node;
 	}
 }
@@ -356,9 +358,9 @@ void all_object_update() {
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
 		const clock_t fire_time = clock();
 		const double fire_gap = (double)(fire_time - last_bullet_spawn_time) / CLOCKS_PER_SEC;
-		
+
 		// 检查本次开火与上次开火的时间间隔是否足够。
-		if (fire_gap >= min_fire_gap) {
+		if (fire_gap >= min_fire_gap[difficulty]) {
 			player_fire();
 			last_bullet_spawn_time = fire_time; // 更新最后一次子弹生成时间。
 
@@ -373,9 +375,9 @@ void all_object_update() {
 
 	const clock_t enemy_spawn_time = clock();
 	const double enemy_spawn_gap = (double)(enemy_spawn_time - last_enemy_spawn_time) / CLOCKS_PER_SEC;
-	
+
 	// 检查本次敌机生成与上次敌机生成的时间间隔是否足够。
-	if (enemy_spawn_gap >= min_enemy_spawn_gap) {
+	if (enemy_spawn_gap >= min_enemy_spawn_gap[difficulty]) {
 		enemy_spawn();
 		last_enemy_spawn_time = enemy_spawn_time; // 更新最后一次敌机生成时间。
 
