@@ -116,14 +116,7 @@ static inline void menu_draw_button(const Button *button) {
 	drawtext(button->text, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
 
-static void menu_render_frame(
-	const Button* buttons,
-	const size_t button_count,
-	const int width,
-	const int height,
-	const int high_scores[3],
-	const int difficulty) {
-	
+static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_scores[3], const int difficulty) {
 	wchar_t line_easy[64];
 	wchar_t line_normal[64];
 	wchar_t line_hard[64];
@@ -177,13 +170,7 @@ static void menu_render_frame(
  * @brief 渲染主菜单的主要接口。
  * @returns 返回被按下的按钮的 id：0 = 开始游戏，1 = 选项，2 = 退出
  */
-int render_draw_main_menu(
-	const int width,
-	const int height,
-	const int high_scores[3],
-	const int difficulty,
-	const int fps) {
-	
+int render_draw_main_menu(const int width, const int height, const int high_scores[3], const int difficulty, const int fps) {
 	const wchar_t* labels[] = { L"开始游戏", L"选择难度", L"退出" };
 	const size_t button_count = _countof(labels);
 	const int button_width = 240;

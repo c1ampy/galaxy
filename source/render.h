@@ -81,13 +81,7 @@ static inline RECT menu_make_rect(const int x, const int y, const int w, const i
 static inline int menu_hit_test(const Button *item, const int x, const int y);
 static inline void menu_copy_label(wchar_t *dst, size_t cap, const wchar_t *src);
 static inline void menu_draw_button(const Button *button);
-static void menu_render_frame(
-	const Button* buttons,
-	const size_t button_count,
-	const int width,
-	const int height,
-	const int high_scores[3],
-	const int difficulty);
+static void menu_render_frame(const Button* buttons, const size_t button_count, const int width, const int height, const int high_scores[3], const int difficulty);
 
 // 渲染菜单和游戏画面的接口
 
@@ -95,12 +89,7 @@ static void menu_render_frame(
  * @brief 渲染主菜单。
  * @return 0 = 开始游戏，1 = 选择难度，2 = 退出。
  */
-int render_draw_main_menu(
-	const int width,
-	const int height,
-	const int high_scores[3],
-	const int difficulty,
-	const int fps);
+int render_draw_main_menu(const int width, const int height, const int high_scores[3], const int difficulty, const int fps);
 
 /**
  * @brief 渲染游戏画面的主要接口。
