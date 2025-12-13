@@ -85,25 +85,6 @@ int main() {
 
 	render_init(SCREEN_WIDTH, SCREEN_HEIGHT, L"飞机大战");
 
-	const int high_score = 0; // 后面将加入从文件读取最高分
-
-	int button_id = -1;
-	while (true) {
-		button_id = render_draw_main_menu(SCREEN_WIDTH, SCREEN_HEIGHT, high_score, FPS);
-		if (button_id == 0 || button_id == 2) {
-			break;
-		}
-
-		// 此处加入选项界面
-		// 选好之后直接回到主界面（继续循环）
-	}
-
-	if (button_id == 2) {
-		render_shutdown();
-		fprintf(stdout, "Exited without starting the game.\n");
-		return 0;
-	}
-
 	render_load_gameplay_textures(
 		L"",
 		L"D:\\coding\\galaxy_test\\image\\player.png",
@@ -111,35 +92,21 @@ int main() {
 		L"D:\\coding\\galaxy_test\\image\\bullet.png"
 	);
 
-	game_init(&game_control_data);
-	object_init();
-	game_start(&game_control_data, 1);
+	game_control_data.running = true;
+	game_to_menu(&game_control_data);
 	while (game_control_data.running) {
-		all_object_update();
-		const GameplayVisualState state{
-			SCREEN_WIDTH,
-			SCREEN_HEIGHT,
-			game_control_data.score,
-			game_control_data.state == GAMEOVER,
-			L"",
-			(const Object*)player,
-			(const List*)enemy_list,
-			(const List*)bullet_list
-		};
-		render_draw_current_frame(&state);
+		switch (game_control_data.state) {
+		case MENU:
+			const int high_score = 0; // 等待加入文件读取最高分。
+			const int button_id = render_draw_main_menu(SCREEN_WIDTH, SCREEN_HEIGHT, high_score, FPS);
 
-		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-			// 这里（按下 esc 键后）暂定为直接退出游戏。
-			// 之后可以拓展出一个暂停界面。
-			game_control_data.running = false;
+			switch (button_id) {
+			case 0:
+				game_start(&game_control_data, 1);
+			}
 		}
-		
 		Sleep(1000 / FPS);
 	}
-
-	object_free();
-	render_shutdown();
-	fprintf(stdout, "Exited.\n");
 
 	return 0;
 }
@@ -304,7 +271,7 @@ void enemy_bullet_collision() {
 			 */
 			Node *next_bullet_node = bullet_node->next;
 			Object *bullet = (Object *)bullet_node->data;
-			
+
 			if (object_collision(enemy, bullet)) {
 				add_score(&game_control_data, POINTS_PER_HIT);
 
@@ -337,10 +304,11 @@ void enemy_player_collision() {
 		Object *enemy = (Object *)enemy_node->data;
 
 		if (object_collision(enemy, player)) {
-			list_random_erase(enemy_list, enemy_node);
-			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
-
 			reduce_hp(&game_control_data, 1);
+
+			list_random_erase(enemy_list, enemy_node);
+			
+			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
 		}
 
 		enemy_node = next_enemy_node;
