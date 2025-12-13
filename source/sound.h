@@ -10,7 +10,7 @@ typedef enum {
     SOUND_POWERUP = 3,    //道具音效
     SOUND_GAMEOVER = 4,   //游戏结束音效
     SOUND_MENU = 5        //菜单音效
-    SOUND_COUNT           //音效数目
+    SOUND_COUNT           //音效的数目
 }SoundType    
 
 //函数声明

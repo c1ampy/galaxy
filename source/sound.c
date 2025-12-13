@@ -27,7 +27,7 @@ int initSound(void)
     if(deviceCount == 0){
         printf("[警告] 未检测到音频输出设备\n");
         printf("       可能是电脑没有声卡，或声卡驱动未安装\n");
-        printf("       游戏将继续运行，但没有声音\n");
+        printf("       游戏将继续运行，但是没有声音\n");
         //标记为未初始化
         initSound1 = 0;
         //返回0表示初始化失败

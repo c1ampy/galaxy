@@ -30,8 +30,8 @@ typedef struct Object {
 #endif /* OBJECT_H */
 
 /**
-* @brief 判断游戏对象是否碰撞。
-*/
+ * @brief 判断游戏对象是否碰撞。
+ */
 bool object_collision(const Object *obj1, const Object *obj2) {
 	if (!obj1 || !obj2) {
 		fprintf(stderr, "Invalid object pointer.\n");
