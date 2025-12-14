@@ -1,4 +1,4 @@
-/** 
+/**
  * @file high_score_save_load.c
  * @brief 这份源文件实现了最高分保存、读取的函数。
  * @author 刘博闻
@@ -10,9 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/**
- * @brief 保存各难度最高分。
- */
+ /**
+  * @brief 保存各难度最高分。
+  */
 void high_score_save(const int high_score[DIFFICULTY_COUNT]) {
 	FILE* high_score_file = NULL;
 	if (fopen_s(&high_score_file, HIGH_SCORE_FILE, "wb")) {

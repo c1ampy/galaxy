@@ -22,14 +22,14 @@
 
 extern RenderTextures g_renderTextures;
 
-Object *player = NULL;
-List *enemy_list = NULL, *bullet_list = NULL;
+Object* player = NULL;
+List* enemy_list = NULL, * bullet_list = NULL;
 
 int difficulty;
 const int starting_hp[DIFFICULTY_COUNT] = { 2, 2, 1 };
 const int delta_hp[DIFFICULTY_COUNT] = { 1, 1, 1 };
 const double min_fire_gap[DIFFICULTY_COUNT] = { 0.4, 0.5, 0.6 }; // 单位：秒
-const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 0.45, 0.35, 0.25 }; // 单位：秒
+const double min_enemy_spawn_gap[DIFFICULTY_COUNT] = { 0.3, 0.2, 0.1 }; // 单位：秒
 const int player_speed[DIFFICULTY_COUNT] = { 8, 12, 12 }; // 单位：像素每帧
 const int enemy_speed[DIFFICULTY_COUNT] = { 6, 9, 9 }; // 单位：像素每帧
 const int bullet_speed[DIFFICULTY_COUNT] = { 12, 18, 18 }; // 单位：像素每帧
@@ -94,11 +94,11 @@ int main() {
 
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, L"飞机大战");
 
-	render_load_gameplay_textures(
-		L"",
-		L"D:\\coding\\galaxy_test\\image\\player.png",
-		L"D:\\coding\\galaxy_test\\image\\enemy.png",
-		L"D:\\coding\\galaxy_test\\image\\bullet.png"
+	render_load_texture(
+		L"image\\background.png",
+		L"image\\player.png",
+		L"image\\enemy.png",
+		L"image\\bullet.png"
 	);
 
 	game_control_data.running = true;
@@ -133,14 +133,14 @@ int main() {
 		else if (game_control_data.state == PLAYING) {
 
 			object_update();
-			const GameplayVisualState state {
+			const GameplayVisualState state{
 				SCREEN_WIDTH,
 				SCREEN_HEIGHT,
 				game_control_data.score,
 				L"",
-				(const Object *)player,
-				(const List *)enemy_list,
-				(const List *)bullet_list,
+				(const Object*)player,
+				(const List*)enemy_list,
+				(const List*)bullet_list,
 				difficulty,
 				game_control_data.hp,
 				starting_hp[difficulty]
@@ -152,7 +152,7 @@ int main() {
 			}
 		}
 		else if (game_control_data.state == PAUSED) {
-			
+
 			int high_score[DIFFICULTY_COUNT] = { 0 };
 			high_score_load(high_score);
 			high_score[difficulty] = game_control_data.score > high_score[difficulty] ? game_control_data.score : high_score[difficulty];
@@ -185,21 +185,21 @@ int main() {
 			high_score_save(high_score);
 
 			object_free();
-			const GameplayVisualState state {
+			const GameplayVisualState state{
 				SCREEN_WIDTH,
 				SCREEN_HEIGHT,
 				game_control_data.score,
 				L"",
-				(const Object *)player,
-				(const List *)enemy_list,
-				(const List *)bullet_list,
+				(const Object*)player,
+				(const List*)enemy_list,
+				(const List*)bullet_list,
 				difficulty,
 				game_control_data.hp,
 				starting_hp[difficulty]
 			};
 
 			const int choice = render_draw_wasted_page(&state, high_score, FPS);
-			
+
 			if (choice == 0) {
 				object_init();
 				game_control_start(&game_control_data, starting_hp[difficulty]);
@@ -258,7 +258,7 @@ void player_move() {
  * @brief 处理玩家开火。
  */
 void player_fire() {
-	Object *new_bullet = (Object *)malloc(sizeof(Object));
+	Object* new_bullet = (Object*)malloc(sizeof(Object));
 	if (!new_bullet) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
@@ -275,7 +275,7 @@ void player_fire() {
  * @brief 处理敌机生成。
  */
 void enemy_spawn() {
-	Object *new_enemy = (Object *)malloc(sizeof(Object));
+	Object* new_enemy = (Object*)malloc(sizeof(Object));
 	if (!new_enemy) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
@@ -292,15 +292,15 @@ void enemy_spawn() {
  * @brief 处理敌机向下移动，并删除超出屏幕底端的敌机。
  */
 void enemy_move() {
-	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+	for (Node* enemy_node = enemy_list->head->next; enemy_node; ) {
 		/**
 		 * 此处不能在 for 循环语句中写入 enemy_node = enemy_node->next，
 		 * 因为在进入下一次循环之前，当前的 enemy_node 指针所指向的结点可能已经被释放，
 		 * 若再次访问 enemy_node->next 会引发段错误。
 		 * 应该额外用一个指针变量 next_enemy_node 提前记录后继节点的地址。
 		 */
-		Node *next_enemy_node = enemy_node->next;
-		Object *enemy = (Object *)enemy_node->data;
+		Node* next_enemy_node = enemy_node->next;
+		Object* enemy = (Object*)enemy_node->data;
 
 		enemy->y += enemy_speed[difficulty];
 		if (enemy->y > SCREEN_HEIGHT) {
@@ -317,13 +317,13 @@ void enemy_move() {
  * @brief 处理子弹向上移动，并删除超出屏幕顶端的子弹。
  */
 void bullet_move() {
-	for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
+	for (Node* bullet_node = bullet_list->head->next; bullet_node; ) {
 		/**
 		 * 创建指针变量 next_bullet_node 原因：
 		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
 		 */
-		Node *next_bullet_node = bullet_node->next;
-		Object *bullet = (Object *)bullet_node->data;
+		Node* next_bullet_node = bullet_node->next;
+		Object* bullet = (Object*)bullet_node->data;
 
 		bullet->y -= bullet_speed[difficulty];
 		if (bullet->y < -BULLET_HEIGHT) {
@@ -340,21 +340,21 @@ void bullet_move() {
  * @brief 对所有敌机，判断其是否被子弹击中。
  */
 void enemy_bullet_collision() {
-	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+	for (Node* enemy_node = enemy_list->head->next; enemy_node; ) {
 		/**
 		 * 创建指针变量 next_enemy_node 原因：
 		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
 		 */
-		Node *next_enemy_node = enemy_node->next;
-		Object *enemy = (Object *)enemy_node->data;
+		Node* next_enemy_node = enemy_node->next;
+		Object* enemy = (Object*)enemy_node->data;
 
-		for (Node *bullet_node = bullet_list->head->next; bullet_node; ) {
+		for (Node* bullet_node = bullet_list->head->next; bullet_node; ) {
 			/**
 			 * 创建指针变量 next_bullet_node 原因：
 			 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
 			 */
-			Node *next_bullet_node = bullet_node->next;
-			Object *bullet = (Object *)bullet_node->data;
+			Node* next_bullet_node = bullet_node->next;
+			Object* bullet = (Object*)bullet_node->data;
 
 			if (object_collision(enemy, bullet)) {
 				list_random_erase(enemy_list, enemy_node);
@@ -379,19 +379,19 @@ void enemy_bullet_collision() {
  * @brief 对所有敌机，判断其是否与玩家碰撞。
  */
 void enemy_player_collision() {
-	for (Node *enemy_node = enemy_list->head->next; enemy_node; ) {
+	for (Node* enemy_node = enemy_list->head->next; enemy_node; ) {
 		/**
 		 * 创建指针变量 next_enemy_node 原因：
 		 * 见函数 enemy_move() 中 next_enemy_node 定义处的注释。
 		 */
-		Node *next_enemy_node = enemy_node->next;
-		Object *enemy = (Object *)enemy_node->data;
+		Node* next_enemy_node = enemy_node->next;
+		Object* enemy = (Object*)enemy_node->data;
 
 		if (object_collision(enemy, player)) {
 			list_random_erase(enemy_list, enemy_node);
 
 			fprintf(stdout, "An enemy has been erased. (collision with player)\n");
-			
+
 			game_control_reduce_hp(&game_control_data, delta_hp[difficulty]);
 		}
 
@@ -403,7 +403,7 @@ void enemy_player_collision() {
  * @brief 初始化游戏对象。
  */
 void object_init() {
-	player = (Object *)malloc(sizeof(Object));
+	player = (Object*)malloc(sizeof(Object));
 	if (!player) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);

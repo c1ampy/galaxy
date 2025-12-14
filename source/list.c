@@ -1,4 +1,4 @@
-/** 
+/**
  * @file list.c
  * @brief 这份源文件实现了一个泛型链表，支持了开发飞机大战主程序所需的必要功能。
  * @author 陆营
@@ -13,19 +13,19 @@
 #ifndef LIST_H
 #define LIST_H
 
-/**
- * @brief 链表结点
- */
+ /**
+  * @brief 链表结点
+  */
 typedef struct Node {
-	void *data; // 泛型数据
-	struct Node *next, *prev; // 双向链表
+	void* data; // 泛型数据
+	struct Node* next, * prev; // 双向链表
 } Node;
 
 /**
  * @brief 链表本身，头结点总不储存数据而尾结点储存数据。
  */
 typedef struct List {
-	Node *head, *tail;
+	Node* head, * tail;
 } List;
 
 #endif // LIST_H
@@ -34,19 +34,19 @@ typedef struct List {
  * @brief 初始化链表，最初链表只有一个结点，其即为头结点又为尾结点，头结点总不储存数据而尾结点储存数据。
  * @return 指向新创建链表的指针。
  */
-List *list_init() {
-	List *list = (List *)malloc(sizeof(List));
+List* list_init() {
+	List* list = (List*)malloc(sizeof(List));
 	if (!list) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
-	                                   
-	list->head = (Node *)malloc(sizeof(Node));
+
+	list->head = (Node*)malloc(sizeof(Node));
 	if (!list->head) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	list->head->data = NULL;
 	list->head->next = NULL;
 	list->head->prev = NULL;
@@ -57,13 +57,13 @@ List *list_init() {
 /**
  * @brief 从链表尾部插入元素。
  */
-void list_append(List *list, void *data) {
+void list_append(List* list, void* data) {
 	if (!list) {
 		fprintf(stderr, "Invalid list.\n");
 		return;
 	}
 
-	Node *new_node = (Node *)malloc(sizeof(Node));
+	Node* new_node = (Node*)malloc(sizeof(Node));
 	if (!new_node) {
 		fprintf(stderr, "malloc() failed.\n");
 		exit(EXIT_FAILURE);
@@ -80,7 +80,7 @@ void list_append(List *list, void *data) {
 /**
  * @brief O(1) 随机删除链表元素，需要保证传入的结点在链表中，且不为头结点。
  */
-void list_random_erase(List *list, Node *node) {
+void list_random_erase(List* list, Node* node) {
 	if (!list) {
 		fprintf(stderr, "Invalid list.\n");
 		return;
@@ -104,13 +104,13 @@ void list_random_erase(List *list, Node *node) {
 /**
  * @brief 释放链表。
  */
-void list_free(List *list) {
+void list_free(List* list) {
 	if (!list)
 		return;
 
-	Node *cur = list->head;
+	Node* cur = list->head;
 	while (cur) {
-		Node *next = cur->next;
+		Node* next = cur->next;
 		free(cur->data);
 		free(cur);
 		cur = next;
