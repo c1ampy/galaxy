@@ -1,4 +1,4 @@
-/** 
+/**
  * @file object.c
  * @brief 这份源文件实现了有关 Object 结构体的一系列重要函数。以下单位均为像素。
  * @author 陆营
@@ -32,7 +32,7 @@ typedef struct Object {
 /**
  * @brief 判断游戏对象是否碰撞。
  */
-bool object_collision(const Object *obj1, const Object *obj2) {
+bool object_collision(const Object* obj1, const Object* obj2) {
 	if (!obj1 || !obj2) {
 		fprintf(stderr, "Invalid object pointer.\n");
 		return false;
@@ -41,39 +41,39 @@ bool object_collision(const Object *obj1, const Object *obj2) {
 	// 推导对象的宽高
 	int width1, height1, width2, height2;
 	switch (obj1->type) {
-		case PLAYER:
-			width1 = PLAYER_WIDTH;
-			height1 = PLAYER_HEIGHT;
-			break;
-		case ENEMY:
-			width1 = ENEMY_WIDTH;
-			height1 = ENEMY_HEIGHT;
-			break;
-		case BULLET:
-			width1 = BULLET_WIDTH;
-			height1 = BULLET_HEIGHT;
-			break;
-		default:
-			fprintf(stderr, "Object type error.\n");
-			return false;
+	case PLAYER:
+		width1 = PLAYER_WIDTH;
+		height1 = PLAYER_HEIGHT;
+		break;
+	case ENEMY:
+		width1 = ENEMY_WIDTH;
+		height1 = ENEMY_HEIGHT;
+		break;
+	case BULLET:
+		width1 = BULLET_WIDTH;
+		height1 = BULLET_HEIGHT;
+		break;
+	default:
+		fprintf(stderr, "Object type error.\n");
+		return false;
 	}
 
 	switch (obj2->type) {
-		case PLAYER:
-			width2 = PLAYER_WIDTH;
-			height2 = PLAYER_HEIGHT;
-			break;
-		case ENEMY:
-			width2 = ENEMY_WIDTH;
-			height2 = ENEMY_HEIGHT;
-			break;
-		case BULLET:
-			width2 = BULLET_WIDTH;
-			height2 = BULLET_HEIGHT;
-			break;
-		default:
-			fprintf(stderr, "Object type error.\n");
-			return false;
+	case PLAYER:
+		width2 = PLAYER_WIDTH;
+		height2 = PLAYER_HEIGHT;
+		break;
+	case ENEMY:
+		width2 = ENEMY_WIDTH;
+		height2 = ENEMY_HEIGHT;
+		break;
+	case BULLET:
+		width2 = BULLET_WIDTH;
+		height2 = BULLET_HEIGHT;
+		break;
+	default:
+		fprintf(stderr, "Object type error.\n");
+		return false;
 	}
 
 	if (obj1->x < obj2->x + width2 &&
