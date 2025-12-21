@@ -20,7 +20,6 @@
 
 - 使用 EasyX 的自动安装程序为 Visual Studio 部署 EasyX。（详见 EasyX 官网的[这个教程](https://easyx.cn/setup)）
 
-
 - 将 `source` 文件夹下的所有文件（包括 `image` 文件夹和其中所有贴图，但不含 `source` 文件夹本身）都放在用 Visual Studio 创建的同一个项目目录下，并向该项目添加所有头文件和源文件。（详见[这个教程](https://zhuanlan.zhihu.com/p/476486522)）
 
 - 调出 Visual Studio 的「高级保存选项」菜单（详见[这个教程](https://jishuzhan.net/article/1923749980226048002)），将编码设置为「简体中文(GB2312) - 代码页 936」，并将所有源文件与头文件都按这个编码格式保存一遍。
