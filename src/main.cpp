@@ -95,10 +95,10 @@ int main() {
 	window_create(SCREEN_WIDTH, SCREEN_HEIGHT, L"飞机大战");
 
 	render_load_texture(
-		L"image\\background.png",
-		L"image\\player.png",
-		L"image\\enemy.png",
-		L"image\\bullet.png"
+		L"assets\\background.png",
+		L"assets\\player.png",
+		L"assets\\enemy.png",
+		L"assets\\bullet.png"
 	);
 
 	game_control_data.running = true;
